@@ -19,7 +19,7 @@ export default function WinningProducts() {
     { icon: "🏷️", label: "Tag Generator", href: "/tags" },
     { icon: "📈", label: "Trend Graph", href: "/trends" },
     { icon: "🔥", label: "Winning Products", href: "/winning" },
-    { icon: "⭐", label: "Listing Optimizer", href: "/dashboard" },
+    { icon: "⭐", label: "Listing Optimizer", href: "/listing" },
   ];
 
   function fetchProducts() {
