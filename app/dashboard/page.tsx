@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 function getCompColor(comp: string) {
   if (comp === "Low") return "text-green-400";
@@ -14,6 +15,7 @@ function getTrendColor(trend: string) {
 }
 
 export default function Dashboard() {
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [result, setResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -25,16 +27,13 @@ export default function Dashboard() {
     setLoading(true);
     setNoResult(false);
     setResult(null);
-
     try {
       const res = await fetch("/api/keywords", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ keyword: query.trim().toLowerCase() }),
       });
-
       const data = await res.json();
-
       if (data.error || !data.related?.length) {
         setNoResult(true);
       } else {
@@ -44,17 +43,17 @@ export default function Dashboard() {
     } catch {
       setNoResult(true);
     }
-
     setLoading(false);
   }
 
   const menuItems = [
-    { icon: "🔍", label: "Keyword Research" },
-    { icon: "📊", label: "Competition" },
-    { icon: "📈", label: "Trends" },
-    { icon: "🏷️", label: "Tag Generator" },
-    { icon: "⭐", label: "Listing Optimizer" },
-    { icon: "📋", label: "Sales Estimator" },
+    { icon: "🔍", label: "Keyword Research", path: "/dashboard" },
+    { icon: "📊", label: "Competition", path: "/dashboard" },
+    { icon: "📈", label: "Trends", path: "/dashboard" },
+    { icon: "🏷️", label: "Tag Generator", path: "/dashboard" },
+    { icon: "⭐", label: "Listing Optimizer", path: "/listing" },
+    { icon: "📋", label: "Sales Estimator", path: "/dashboard" },
+    { icon: "🎨", label: "POD Research", path: "/pod", isNew: true },
   ];
 
   const suggestions = [
@@ -69,9 +68,15 @@ export default function Dashboard() {
           Rank<span className="text-purple-400">ify</span>
         </div>
         {menuItems.map((item, i) => (
-          <button key={i} className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition text-left
-            ${i === 0 ? "bg-purple-600/30 text-purple-300" : "text-white/50 hover:text-white hover:bg-white/5"}`}>
-            <span>{item.icon}</span> {item.label}
+          <button key={i}
+            onClick={() => router.push(item.path)}
+            className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition text-left
+              ${i === 0 ? "bg-purple-600/30 text-purple-300" : "text-white/50 hover:text-white hover:bg-white/5"}`}>
+            <span>{item.icon}</span>
+            <span>{item.label}</span>
+            {item.isNew && (
+              <span className="ml-auto bg-orange-500 text-white text-xs px-1.5 py-0.5 rounded-full font-semibold">NEW</span>
+            )}
           </button>
         ))}
       </aside>
@@ -86,11 +91,8 @@ export default function Dashboard() {
             placeholder='Search any keyword, e.g. "candle", "mug", "wedding gift"'
             className="flex-1 bg-white/5 border border-white/10 rounded-full px-5 py-3 text-white placeholder-white/30 text-sm outline-none focus:border-purple-500"
           />
-          <button
-            onClick={handleAnalyze}
-            disabled={loading}
-            className="bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white px-6 py-3 rounded-full font-bold text-sm transition min-w-[120px]"
-          >
+          <button onClick={handleAnalyze} disabled={loading}
+            className="bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white px-6 py-3 rounded-full font-bold text-sm transition min-w-[120px]">
             {loading ? "Analyzing..." : "Analyze"}
           </button>
         </div>
@@ -129,7 +131,6 @@ export default function Dashboard() {
               <button onClick={() => { setResult(null); setQuery(""); setSearched(""); }}
                 className="text-white/30 hover:text-white text-xs transition">✕ Clear</button>
             </div>
-
             <div className="grid grid-cols-3 gap-4 mb-8">
               {[
                 { label: "Monthly searches", value: result.volume, sub: result.trend, color: getTrendColor(result.trend) },
@@ -143,7 +144,6 @@ export default function Dashboard() {
                 </div>
               ))}
             </div>
-
             <p className="text-white/50 text-xs font-bold mb-3 uppercase tracking-widest">
               Related keywords ({result.related.length})
             </p>
