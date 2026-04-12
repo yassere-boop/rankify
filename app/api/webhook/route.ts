@@ -17,7 +17,7 @@ export async function POST(req: Request) {
         email: email,
         plan: "trial",
         searches_used: 0,
-        searches_limit: 999,
+        searches_limit: 10,
         trial_ends_at: trialEnds.toISOString(),
       });
     }
