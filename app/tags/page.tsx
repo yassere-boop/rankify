@@ -1,38 +1,42 @@
 "use client";
 import { useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function TagGenerator() {
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [result, setResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [noResult, setNoResult] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  const menuItems = [
+    { icon: "🔍", label: "Keyword Research", path: "/dashboard" },
+    { icon: "📊", label: "Competition", path: "/competition" },
+    { icon: "📈", label: "Trends", path: "/trends" },
+    { icon: "🏷️", label: "Tag Generator", path: "/tags", active: true },
+    { icon: "⭐", label: "Listing Optimizer", path: "/listing" },
+    { icon: "📋", label: "Sales Estimator", path: "/sales" },
+    { icon: "🎨", label: "POD Research", path: "/pod", isNew: true },
+  ];
+
   async function handleGenerate() {
     if (!query.trim()) return;
     setLoading(true);
     setNoResult(false);
     setResult(null);
-
     try {
       const res = await fetch("/api/tags", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ product: query.trim().toLowerCase() }),
       });
-
       const data = await res.json();
-
-      if (data.error || !data.tags?.length) {
-        setNoResult(true);
-      } else {
-        setResult(data);
-      }
+      if (data.error || !data.tags?.length) setNoResult(true);
+      else setResult(data);
     } catch {
       setNoResult(true);
     }
-
     setLoading(false);
   }
 
@@ -56,15 +60,6 @@ export default function TagGenerator() {
     return "bg-red-400/20 border-red-400/40 text-red-300";
   }
 
-  const menuItems = [
-    { icon: "🔍", label: "Keyword Research", href: "/dashboard" },
-    { icon: "🏆", label: "Product Analyzer", href: "/product" },
-    { icon: "🏷️", label: "Tag Generator", href: "/tags" },
-    { icon: "📊", label: "Competition", href: "/dashboard" },
-    { icon: "📈", label: "Trends", href: "/dashboard" },
-    { icon: "⭐", label: "Listing Optimizer", href: "/dashboard" },
-  ];
-
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex">
       <aside className="w-52 border-r border-white/10 p-4 flex flex-col gap-1 shrink-0">
@@ -72,29 +67,27 @@ export default function TagGenerator() {
           Rank<span className="text-purple-400">ify</span>
         </div>
         {menuItems.map((item, i) => (
-          <Link key={i} href={item.href}
-            className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition
-            ${i === 2 ? "bg-purple-600/30 text-purple-300" : "text-white/50 hover:text-white hover:bg-white/5"}`}>
-            <span>{item.icon}</span> {item.label}
-          </Link>
+          <button key={i} onClick={() => router.push(item.path)}
+            className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition text-left
+              ${item.active ? "bg-purple-600/30 text-purple-300" : "text-white/50 hover:text-white hover:bg-white/5"}`}>
+            <span>{item.icon}</span>
+            <span>{item.label}</span>
+            {item.isNew && <span className="ml-auto bg-orange-500 text-white text-xs px-1.5 py-0.5 rounded-full font-semibold">NEW</span>}
+          </button>
         ))}
       </aside>
 
       <div className="flex-1 p-8 overflow-auto">
         <div className="mb-8">
-          <h1 className="text-white text-2xl font-black mb-1">Tag Generator</h1>
+          <h1 className="text-white text-2xl font-black mb-1">🏷️ Tag Generator</h1>
           <p className="text-white/40 text-sm">Generate the best tags for your listings — ranked by search volume</p>
         </div>
 
         <div className="flex gap-3 mb-8">
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleGenerate()}
-            placeholder='e.g. "soy candle", "custom mug", "holographic sticker"'
-            className="flex-1 bg-white/5 border border-white/10 rounded-full px-5 py-3 text-white placeholder-white/30 text-sm outline-none focus:border-purple-500"
-          />
+          <input type="text" value={query} onChange={e => setQuery(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && handleGenerate()}
+            placeholder='e.g. "soy candle", "custom mug", "dog mom shirt"'
+            className="flex-1 bg-white/5 border border-white/10 rounded-full px-5 py-3 text-white placeholder-white/30 text-sm outline-none focus:border-purple-500" />
           <button onClick={handleGenerate} disabled={loading}
             className="bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white px-6 py-3 rounded-full font-bold text-sm transition min-w-[140px]">
             {loading ? "Generating..." : "Generate Tags"}
@@ -116,8 +109,6 @@ export default function TagGenerator() {
 
         {result && !loading && (
           <div className="space-y-6">
-
-            {/* Tags cloud */}
             <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
               <div className="flex items-center justify-between mb-6">
                 <div>
@@ -125,31 +116,21 @@ export default function TagGenerator() {
                   <p className="text-white/40 text-xs mt-1">{result.tags.length} tags generated — sorted by score</p>
                 </div>
                 <button onClick={copyAllTags}
-                  className={`px-5 py-2.5 rounded-full text-sm font-bold transition ${
-                    copied ? "bg-green-500 text-white" : "bg-purple-600 hover:bg-purple-500 text-white"
-                  }`}>
+                  className={`px-5 py-2.5 rounded-full text-sm font-bold transition ${copied ? "bg-green-500 text-white" : "bg-purple-600 hover:bg-purple-500 text-white"}`}>
                   {copied ? "✓ Copied!" : "Copy All Tags"}
                 </button>
               </div>
-
-              {/* Tag pills */}
-              <div className="flex flex-wrap gap-3 mb-6">
+              <div className="flex flex-wrap gap-3 mb-4">
                 {result.tags.map((t: any, i: number) => (
-                  <button key={i}
-                    onClick={() => {
-                      navigator.clipboard.writeText(t.tag);
-                    }}
-                    className={`border px-4 py-2 rounded-full text-sm font-semibold transition hover:scale-105 ${getScoreColor(t.score)}`}
-                    title="Click to copy">
+                  <button key={i} onClick={() => navigator.clipboard.writeText(t.tag)}
+                    className={`border px-4 py-2 rounded-full text-sm font-semibold transition hover:scale-105 ${getScoreColor(t.score)}`}>
                     {t.tag}
                   </button>
                 ))}
               </div>
-
-              <p className="text-white/20 text-xs">Click any tag to copy it individually</p>
+              <p className="text-white/20 text-xs">Click any tag to copy individually</p>
             </div>
 
-            {/* Tags table */}
             <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
               <div className="px-5 py-4 border-b border-white/10">
                 <p className="text-white/50 text-xs font-bold uppercase tracking-widest">Tag details</p>
@@ -185,11 +166,10 @@ export default function TagGenerator() {
               </table>
             </div>
 
-            {/* Etsy tip */}
             <div className="bg-purple-500/10 border border-purple-500/20 rounded-2xl p-4">
-              <p className="text-purple-300 text-sm font-semibold mb-1">Pro tip</p>
+              <p className="text-purple-300 text-sm font-semibold mb-1">💡 Pro tip</p>
               <p className="text-white/50 text-xs leading-relaxed">
-                Etsy allows up to 13 tags per listing. Use the green tags first (high score) — they have the best balance of search volume and low competition. Copy all tags and paste them directly into your listing.
+                Etsy allows up to 13 tags per listing. Use the green tags first — they have the best balance of volume and low competition. Copy all and paste directly into your listing.
               </p>
             </div>
           </div>
@@ -199,7 +179,7 @@ export default function TagGenerator() {
           <div className="flex flex-col items-center justify-center h-64 text-center">
             <div className="text-5xl mb-4">🏷️</div>
             <p className="text-white/50 text-sm">Enter a product to generate optimized tags</p>
-            <p className="text-white/30 text-xs mt-1">Tags are ranked by search volume and competition score</p>
+            <p className="text-white/30 text-xs mt-1">Tags ranked by search volume and competition score</p>
           </div>
         )}
       </div>
