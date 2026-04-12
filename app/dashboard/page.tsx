@@ -53,12 +53,12 @@ export default function Dashboard() {
   }
 
   const menuItems = [
-    { icon: "🔍", label: "Keyword Research", path: "/dashboard" },
-    { icon: "📊", label: "Competition", path: "/dashboard" },
-    { icon: "📈", label: "Trends", path: "/dashboard" },
-    { icon: "🏷️", label: "Tag Generator", path: "/dashboard" },
+    { icon: "🔍", label: "Keyword Research", path: "/dashboard", active: true },
+    { icon: "📊", label: "Competition", path: "/competition" },
+    { icon: "📈", label: "Trends", path: "/trends" },
+    { icon: "🏷️", label: "Tag Generator", path: "/tags" },
     { icon: "⭐", label: "Listing Optimizer", path: "/listing" },
-    { icon: "📋", label: "Sales Estimator", path: "/dashboard" },
+    { icon: "📋", label: "Sales Estimator", path: "/sales" },
     { icon: "🎨", label: "POD Research", path: "/pod", isNew: true },
   ];
 
@@ -74,10 +74,9 @@ export default function Dashboard() {
           Rank<span className="text-purple-400">ify</span>
         </div>
         {menuItems.map((item, i) => (
-          <button key={i}
-            onClick={() => router.push(item.path)}
+          <button key={i} onClick={() => router.push(item.path)}
             className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition text-left
-              ${i === 0 ? "bg-purple-600/30 text-purple-300" : "text-white/50 hover:text-white hover:bg-white/5"}`}>
+              ${item.active ? "bg-purple-600/30 text-purple-300" : "text-white/50 hover:text-white hover:bg-white/5"}`}>
             <span>{item.icon}</span>
             <span>{item.label}</span>
             {item.isNew && (
