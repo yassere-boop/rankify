@@ -1,8 +1,61 @@
- import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
+import { supabaseAdmin } from "@/lib/supabase";
+
+const PLAN_LIMITS: Record<string, number> = {
+  trial: 10,
+  starter: 100,
+  pro: 500,
+  agency: 999999,
+};
 
 export async function POST(req: NextRequest) {
-  const { keyword } = await req.json();
+  // 1. Vérifier l'auth
+  const { userId } = await auth();
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
+  // 2. Récupérer l'utilisateur dans Supabase
+  const { data: user, error } = await supabaseAdmin
+    .from("users")
+    .select("*")
+    .eq("clerk_id", userId)
+    .single();
+
+  if (error || !user) {
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
+  }
+
+  // 3. Vérifier le trial expiré
+  if (user.plan === "trial" && user.trial_ends_at) {
+    const trialEnd = new Date(user.trial_ends_at);
+    if (new Date() > trialEnd) {
+      return NextResponse.json({
+        error: "trial_expired",
+        message: "Your free trial has expired. Please upgrade to continue.",
+      }, { status: 403 });
+    }
+  }
+
+  // 4. Vérifier la limite de recherches
+  const limit = PLAN_LIMITS[user.plan] || 10;
+  if (user.searches_used >= limit) {
+    return NextResponse.json({
+      error: "limit_reached",
+      message: `You've reached your ${limit} searches limit. Upgrade to continue.`,
+      plan: user.plan,
+    }, { status: 403 });
+  }
+
+  // 5. Incrémenter searches_used
+  await supabaseAdmin
+    .from("users")
+    .update({ searches_used: user.searches_used + 1 })
+    .eq("clerk_id", userId);
+
+  // 6. Faire la vraie requête DataForSEO
+  const { keyword } = await req.json();
   const login = process.env.DATAFORSEO_LOGIN;
   const password = process.env.DATAFORSEO_PASSWORD;
   const base64 = Buffer.from(`${login}:${password}`).toString("base64");
@@ -73,6 +126,7 @@ export async function POST(req: NextRequest) {
       opportunity: avgComp < 33 && totalVol > 5000 ? "High" : avgComp > 66 ? "Low" : "Medium",
       trend: mainKw?.trend || "→ Stable",
       related: related.slice(0, 10),
+      searchesLeft: limit - (user.searches_used + 1),
     });
   } catch (error) {
     return NextResponse.json({ error: "Failed to fetch" }, { status: 500 });

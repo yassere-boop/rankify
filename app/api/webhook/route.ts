@@ -10,7 +10,7 @@ export async function POST(req: Request) {
       const { id, email_addresses } = data;
       const email = email_addresses[0]?.email_address;
       const trialEnds = new Date();
-      trialEnds.setDate(trialEnds.getDate() + 2);
+      trialEnds.setDate(trialEnds.getDate() + 1);
 
       await supabaseAdmin.from("users").insert({
         clerk_id: id,

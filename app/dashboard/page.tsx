@@ -21,12 +21,14 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(false);
   const [noResult, setNoResult] = useState(false);
   const [searched, setSearched] = useState("");
+  const [limitError, setLimitError] = useState("");
 
   async function handleAnalyze() {
     if (!query.trim()) return;
     setLoading(true);
     setNoResult(false);
     setResult(null);
+    setLimitError("");
     try {
       const res = await fetch("/api/keywords", {
         method: "POST",
@@ -34,7 +36,11 @@ export default function Dashboard() {
         body: JSON.stringify({ keyword: query.trim().toLowerCase() }),
       });
       const data = await res.json();
-      if (data.error || !data.related?.length) {
+      if (data.error === "trial_expired") {
+        setLimitError("⏰ Your free trial has expired. Upgrade to continue searching.");
+      } else if (data.error === "limit_reached") {
+        setLimitError(`🚫 ${data.message}`);
+      } else if (data.error || !data.related?.length) {
         setNoResult(true);
       } else {
         setResult(data);
@@ -97,7 +103,17 @@ export default function Dashboard() {
           </button>
         </div>
 
-        {!result && !noResult && (
+        {limitError && (
+          <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-6 mb-6 text-center">
+            <p className="text-red-400 font-semibold mb-2">{limitError}</p>
+            <button onClick={() => router.push("/pricing")}
+              className="bg-purple-600 hover:bg-purple-500 text-white px-6 py-2 rounded-full text-sm font-bold transition">
+              Upgrade Now →
+            </button>
+          </div>
+        )}
+
+        {!result && !noResult && !limitError && (
           <div className="flex flex-wrap gap-2 mb-8">
             {suggestions.map((s) => (
               <button key={s} onClick={() => setQuery(s)}
@@ -128,8 +144,13 @@ export default function Dashboard() {
                 Real data for <span className="text-white font-semibold">"{searched}"</span>
                 <span className="ml-2 text-green-400 text-xs">● Live</span>
               </p>
-              <button onClick={() => { setResult(null); setQuery(""); setSearched(""); }}
-                className="text-white/30 hover:text-white text-xs transition">✕ Clear</button>
+              <div className="flex items-center gap-4">
+                {result.searchesLeft !== undefined && (
+                  <p className="text-white/30 text-xs">{result.searchesLeft} searches left</p>
+                )}
+                <button onClick={() => { setResult(null); setQuery(""); setSearched(""); }}
+                  className="text-white/30 hover:text-white text-xs transition">✕ Clear</button>
+              </div>
             </div>
             <div className="grid grid-cols-3 gap-4 mb-8">
               {[
@@ -172,7 +193,7 @@ export default function Dashboard() {
           </>
         )}
 
-        {!result && !noResult && !loading && (
+        {!result && !noResult && !loading && !limitError && (
           <div className="flex flex-col items-center justify-center h-48 text-center">
             <div className="text-4xl mb-4">🔍</div>
             <p className="text-white/50 text-sm">Enter any keyword to get real search data</p>
