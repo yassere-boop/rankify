@@ -13,69 +13,33 @@ function getPODVerdict(volume: string, competition: string, trend: string, keywo
 
   if (isGeneric && isHighComp) {
     return {
-      verdict: "Avoid for POD",
-      emoji: "🚫",
-      color: "#f87171",
-      bg: "rgba(248,113,113,0.06)",
-      border: "rgba(248,113,113,0.2)",
-      reasons: [
-        "Keyword too generic — impossible to differentiate",
-        "Extreme saturation — thousands of similar designs already",
-        "Margins crushed by competition",
-      ],
-      design: [],
-      avoid: ["Designs without a specific angle", "Generic text without humor or niche", "Copying existing bestsellers"],
+      verdict: "Avoid for POD", emoji: "🚫", color: "#f87171",
+      bg: "rgba(248,113,113,0.06)", border: "rgba(248,113,113,0.2)",
+      reasons: ["Keyword too generic — impossible to differentiate", "Extreme saturation — thousands of similar designs already", "Margins crushed by competition"],
+      design: [], avoid: ["Designs without a specific angle", "Generic text without humor or niche", "Copying existing bestsellers"],
     };
   }
-
   if (!hasVolume) {
     return {
-      verdict: "Possible with strong niche",
-      emoji: "⚠️",
-      color: "#fbbf24",
-      bg: "rgba(251,191,36,0.06)",
-      border: "rgba(251,191,36,0.2)",
-      reasons: [
-        "Low demand — niche market only",
-        "Little competition — easy to rank if well targeted",
-        "Works well with strong personalization",
-      ],
-      design: [
-        `${keyword} with humor or unique quote`,
-        `Personalized with name or date`,
-        `Combined with another niche (e.g. ${keyword} + nurse)`,
-      ],
+      verdict: "Possible with strong niche", emoji: "⚠️", color: "#fbbf24",
+      bg: "rgba(251,191,36,0.06)", border: "rgba(251,191,36,0.2)",
+      reasons: ["Low demand — niche market only", "Little competition — easy to rank if well targeted", "Works well with strong personalization"],
+      design: [`${keyword} with humor or unique quote`, `Personalized with name or date`, `Combined with another niche (e.g. ${keyword} + nurse)`],
       avoid: ["Designs without personalization", "Waiting for high volume that won't come"],
     };
   }
-
   if (isHighComp && !isRising) {
     return {
-      verdict: "Possible with strong niche",
-      emoji: "⚠️",
-      color: "#fbbf24",
-      bg: "rgba(251,191,36,0.06)",
-      border: "rgba(251,191,36,0.2)",
-      reasons: [
-        "Good demand but high saturation",
-        "Profitable only with a very specific angle",
-        "Personalization is your only weapon here",
-      ],
-      design: [
-        `Micro-niche: ${keyword} + profession/breed/region`,
-        `Humor specific to the community`,
-        `Premium minimalist designs`,
-      ],
+      verdict: "Possible with strong niche", emoji: "⚠️", color: "#fbbf24",
+      bg: "rgba(251,191,36,0.06)", border: "rgba(251,191,36,0.2)",
+      reasons: ["Good demand but high saturation", "Profitable only with a very specific angle", "Personalization is your only weapon here"],
+      design: [`Micro-niche: ${keyword} + profession/breed/region`, `Humor specific to the community`, `Premium minimalist designs`],
       avoid: ["Generic designs on this keyword", "Pricing too low against big sellers", "No personalization"],
     };
   }
-
   return {
-    verdict: "Great POD Opportunity",
-    emoji: "✅",
-    color: "#34d399",
-    bg: "rgba(52,211,153,0.06)",
-    border: "rgba(52,211,153,0.2)",
+    verdict: "Great POD Opportunity", emoji: "✅", color: "#34d399",
+    bg: "rgba(52,211,153,0.06)", border: "rgba(52,211,153,0.2)",
     reasons: [
       `Solid demand${isRising ? " and growing" : ""} — active buyers in this niche`,
       competition === "Low" ? "Low competition — easy to rank quickly" : "Manageable competition with the right angle",
@@ -137,6 +101,7 @@ export default function Dashboard() {
 
   const chips = ["dog mom", "nurse gift", "teacher gift", "halloween witch", "cat lover", "birthday queen", "vintage retro", "funny dad"];
   const verdict = result ? getPODVerdict(result.volume, result.competition, result.trend, searched) : null;
+  const isPro = result?.isPro || false;
 
   return (
     <>
@@ -203,6 +168,9 @@ export default function Dashboard() {
         .rk-spinner { width: 36px; height: 36px; border: 3px solid rgba(99,102,241,0.2); border-top-color: #6366f1; border-radius: 50%; animation: spin 0.8s linear infinite; }
         .rk-fade { animation: rkfade 0.35s ease; }
         .rk-result-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+        .rk-paywall { position: relative; overflow: hidden; border-radius: 12px; }
+        .rk-paywall-blur { filter: blur(4px); pointer-events: none; user-select: none; }
+        .rk-paywall-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(15,22,35,0.75); border-radius: 12px; backdrop-filter: blur(2px); }
         @keyframes rkfade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
         @keyframes dpulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
         @keyframes spin { to{transform:rotate(360deg)} }
@@ -306,6 +274,7 @@ export default function Dashboard() {
                   </div>
                 </div>
 
+                {/* VERDICT POD */}
                 <div className="rk-verdict" style={{ background: verdict.bg, border: `1px solid ${verdict.border}` }}>
                   <div className="rk-verdict-header">
                     <span className="rk-verdict-emoji">{verdict.emoji}</span>
@@ -324,25 +293,62 @@ export default function Dashboard() {
                     ))}
                   </div>
 
+                  {/* PAYWALL — What to design/avoid */}
                   {verdict.design.length > 0 && (
-                    <div className="rk-design-grid">
-                      <div>
-                        <div className="rk-design-label" style={{ color: verdict.color }}>✏️ What to design</div>
-                        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                          {verdict.design.map((d: string, i: number) => (
-                            <div key={i} className="rk-design-card">→ {d}</div>
-                          ))}
+                    isPro ? (
+                      <div className="rk-design-grid">
+                        <div>
+                          <div className="rk-design-label" style={{ color: verdict.color }}>✏️ What to design</div>
+                          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                            {verdict.design.map((d: string, i: number) => (
+                              <div key={i} className="rk-design-card">→ {d}</div>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="rk-design-label" style={{ color: "#f87171" }}>🚫 What to avoid</div>
+                          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                            {verdict.avoid.map((d: string, i: number) => (
+                              <div key={i} className="rk-design-card">✕ {d}</div>
+                            ))}
+                          </div>
                         </div>
                       </div>
-                      <div>
-                        <div className="rk-design-label" style={{ color: "#f87171" }}>🚫 What to avoid</div>
-                        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                          {verdict.avoid.map((d: string, i: number) => (
-                            <div key={i} className="rk-design-card">✕ {d}</div>
-                          ))}
+                    ) : (
+                      <div className="rk-paywall">
+                        <div className="rk-paywall-blur">
+                          <div className="rk-design-grid">
+                            <div>
+                              <div className="rk-design-label" style={{ color: verdict.color }}>✏️ What to design</div>
+                              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                                {["dog mom + breed specific", "Funny quotes + personalized", "dog mom + holiday event"].map((d, i) => (
+                                  <div key={i} className="rk-design-card">→ {d}</div>
+                                ))}
+                              </div>
+                            </div>
+                            <div>
+                              <div className="rk-design-label" style={{ color: "#f87171" }}>🚫 What to avoid</div>
+                              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                                {["Generic designs", "No personalization", "Copying bestsellers"].map((d, i) => (
+                                  <div key={i} className="rk-design-card">✕ {d}</div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="rk-paywall-overlay">
+                          <div style={{ fontSize: 16, marginBottom: 8 }}>🔒</div>
+                          <div style={{ fontSize: 14, fontWeight: 700, color: "#f1f5f9", marginBottom: 6 }}>Pro Feature</div>
+                          <div style={{ fontSize: 12, color: "#475569", marginBottom: 16, textAlign: "center", maxWidth: 240 }}>
+                            Unlock "What to design" & "What to avoid" with Pro
+                          </div>
+                          <button onClick={() => router.push("/pricing")}
+                            style={{ background: "#6366f1", color: "#fff", border: "none", padding: "10px 24px", borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+                            Upgrade to Pro — $39/mo →
+                          </button>
                         </div>
                       </div>
-                    </div>
+                    )
                   )}
                 </div>
 
@@ -356,7 +362,7 @@ export default function Dashboard() {
                     <div className="rk-stats">
                       {[
                         { label: "Monthly Searches", value: result.volume, sub: result.trend, color: result.trend?.startsWith("↑") ? "#34d399" : result.trend?.startsWith("↓") ? "#f87171" : "#fbbf24" },
-                        { label: "Competition", value: result.competition, sub: `Score ${result.compScore}/100`, color: result.competition === "Low" ? "#34d399" : result.competition === "Medium" ? "#fbbf24" : "#f87171" },
+                        { label: "Competition", value: result.competition, sub: result.compScore ? `Score ${result.compScore}/100` : "Upgrade for exact score", color: result.competition === "Low" ? "#34d399" : result.competition === "Medium" ? "#fbbf24" : "#f87171" },
                         { label: "Opportunity", value: result.opportunity, sub: "Real-time analysis", color: "#a5b4fc" },
                       ].map((s, i) => (
                         <div key={i} className="rk-stat">
@@ -369,7 +375,10 @@ export default function Dashboard() {
 
                     <div className="rk-table-card">
                       <div className="rk-table-head">
-                        <span className="rk-table-title">Related Keywords — {result.related.length} results</span>
+                        <span className="rk-table-title">
+                          Related Keywords — {result.related.length} results
+                          {!isPro && " (3 free · Pro unlocks all 10)"}
+                        </span>
                         <div className="rk-dot" />
                       </div>
                       <table className="rkt">
@@ -405,6 +414,15 @@ export default function Dashboard() {
                           })}
                         </tbody>
                       </table>
+                      {!isPro && (
+                        <div style={{ padding: "14px 22px", borderTop: "1px solid rgba(255,255,255,0.05)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                          <span style={{ fontSize: 12, color: "#475569" }}>7 more keywords hidden</span>
+                          <button onClick={() => router.push("/pricing")}
+                            style={{ background: "rgba(99,102,241,0.1)", color: "#818cf8", border: "1px solid rgba(99,102,241,0.2)", padding: "6px 14px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+                            Unlock with Pro →
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}

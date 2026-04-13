@@ -9,14 +9,14 @@ const PLAN_LIMITS: Record<string, number> = {
   agency: 999999,
 };
 
+const PRO_PLANS = ["pro", "agency"];
+
 export async function POST(req: NextRequest) {
-  // 1. Vérifier l'auth
   const { userId } = await auth();
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // 2. Récupérer l'utilisateur dans Supabase
   const { data: user, error } = await supabaseAdmin
     .from("users")
     .select("*")
@@ -27,7 +27,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
-  // 3. Vérifier le trial expiré
   if (user.plan === "trial" && user.trial_ends_at) {
     const trialEnd = new Date(user.trial_ends_at);
     if (new Date() > trialEnd) {
@@ -38,7 +37,6 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // 4. Vérifier la limite de recherches
   const limit = PLAN_LIMITS[user.plan] || 10;
   if (user.searches_used >= limit) {
     return NextResponse.json({
@@ -48,13 +46,11 @@ export async function POST(req: NextRequest) {
     }, { status: 403 });
   }
 
-  // 5. Incrémenter searches_used
   await supabaseAdmin
     .from("users")
     .update({ searches_used: user.searches_used + 1 })
     .eq("clerk_id", userId);
 
-  // 6. Faire la vraie requête DataForSEO
   const { keyword } = await req.json();
   const login = process.env.DATAFORSEO_LOGIN;
   const password = process.env.DATAFORSEO_PASSWORD;
@@ -69,24 +65,22 @@ export async function POST(req: NextRequest) {
           Authorization: `Basic ${base64}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify([
-          {
-            keywords: [
-              keyword,
-              `${keyword} etsy`,
-              `${keyword} handmade`,
-              `${keyword} custom`,
-              `${keyword} gift`,
-              `buy ${keyword}`,
-              `${keyword} shop`,
-              `${keyword} online`,
-              `personalised ${keyword}`,
-              `${keyword} print`,
-            ],
-            language_name: "English",
-            location_code: 2840,
-          },
-        ]),
+        body: JSON.stringify([{
+          keywords: [
+            keyword,
+            `${keyword} etsy`,
+            `${keyword} handmade`,
+            `${keyword} custom`,
+            `${keyword} gift`,
+            `buy ${keyword}`,
+            `${keyword} shop`,
+            `${keyword} online`,
+            `personalised ${keyword}`,
+            `${keyword} print`,
+          ],
+          language_name: "English",
+          location_code: 2840,
+        }]),
       }
     );
 
@@ -97,6 +91,7 @@ export async function POST(req: NextRequest) {
     }
 
     const results = data.tasks[0].result || [];
+    const isPro = PRO_PLANS.includes(user.plan);
 
     const related = results.map((item: any) => {
       const vol = item.search_volume || 0;
@@ -107,7 +102,7 @@ export async function POST(req: NextRequest) {
 
       return {
         kw: item.keyword,
-        vol: vol.toLocaleString(),
+        vol: isPro ? vol.toLocaleString() : "••••",
         comp: comp < 33 ? "Low" : comp < 66 ? "Medium" : "High",
         trend: trendPct > 0 ? `↑ +${trendPct}%` : trendPct < 0 ? `↓ ${trendPct}%` : "→ Stable",
         rawVol: vol,
@@ -122,11 +117,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       volume: totalVol > 1000 ? `${Math.round(totalVol / 1000)}K` : String(totalVol),
       competition: avgComp < 33 ? "Low" : avgComp < 66 ? "Medium" : "High",
-      compScore: Math.round(avgComp),
+      compScore: isPro ? Math.round(avgComp) : null,
       opportunity: avgComp < 33 && totalVol > 5000 ? "High" : avgComp > 66 ? "Low" : "Medium",
       trend: mainKw?.trend || "→ Stable",
-      related: related.slice(0, 10),
+      related: isPro ? related.slice(0, 10) : related.slice(0, 3),
       searchesLeft: limit - (user.searches_used + 1),
+      isPro,
+      plan: user.plan,
     });
   } catch (error) {
     return NextResponse.json({ error: "Failed to fetch" }, { status: 500 });
