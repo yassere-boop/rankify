@@ -9,78 +9,85 @@ function getPODVerdict(volume: string, competition: string, trend: string, keywo
   const isGeneric = ["candle", "mug", "shirt", "hoodie", "tshirt", "poster"].includes(keyword.toLowerCase().trim());
   const isHighComp = competition === "High";
   const isRising = trend?.startsWith("↑");
-  const isDecline = trend?.startsWith("↓");
   const hasVolume = vol > 1000;
 
   if (isGeneric && isHighComp) {
     return {
-      verdict: "À éviter pour le POD",
+      verdict: "Avoid for POD",
       emoji: "🚫",
       color: "#f87171",
       bg: "rgba(248,113,113,0.06)",
       border: "rgba(248,113,113,0.2)",
       reasons: [
-        "Mot-clé trop générique — impossible de se différencier",
-        "Saturation extrême — des milliers de designs similaires",
-        "Marges écrasées par la concurrence",
+        "Keyword too generic — impossible to differentiate",
+        "Extreme saturation — thousands of similar designs already",
+        "Margins crushed by competition",
       ],
       design: [],
-      avoid: ["Designs sans angle spécifique", "Texte générique sans humour ni niche", "Copier les bestsellers existants"],
+      avoid: ["Designs without a specific angle", "Generic text without humor or niche", "Copying existing bestsellers"],
     };
   }
 
   if (!hasVolume) {
     return {
-      verdict: "Possible avec niche forte",
+      verdict: "Possible with strong niche",
       emoji: "⚠️",
       color: "#fbbf24",
       bg: "rgba(251,191,36,0.06)",
       border: "rgba(251,191,36,0.2)",
       reasons: [
-        "Demande faible — marché de niche uniquement",
-        "Peu de concurrence — facile à ranker si bien ciblé",
-        "Fonctionne avec personnalisation forte",
+        "Low demand — niche market only",
+        "Little competition — easy to rank if well targeted",
+        "Works well with strong personalization",
       ],
-      design: [`${keyword} avec humour ou citation unique`, `Personnalisé avec nom/prénom`, `Combiné avec une autre niche (ex: ${keyword} + nurse)`],
-      avoid: ["Designs sans personnalisation", "Attendre un volume élevé qui ne viendra pas"],
+      design: [
+        `${keyword} with humor or unique quote`,
+        `Personalized with name or date`,
+        `Combined with another niche (e.g. ${keyword} + nurse)`,
+      ],
+      avoid: ["Designs without personalization", "Waiting for high volume that won't come"],
     };
   }
 
   if (isHighComp && !isRising) {
     return {
-      verdict: "Possible avec niche forte",
+      verdict: "Possible with strong niche",
       emoji: "⚠️",
       color: "#fbbf24",
       bg: "rgba(251,191,36,0.06)",
       border: "rgba(251,191,36,0.2)",
       reasons: [
-        "Bonne demande mais saturation élevée",
-        "Rentable uniquement avec un angle très spécifique",
-        "La personnalisation est ta seule arme ici",
+        "Good demand but high saturation",
+        "Profitable only with a very specific angle",
+        "Personalization is your only weapon here",
       ],
-      design: [`Micro-niche : ${keyword} + profession/race/région`, `Humour spécifique à la communauté`, `Designs minimalistes premium`],
-      avoid: ["Designs génériques sur ce mot-clé", "Prix trop bas face aux gros vendeurs", "Sans personnalisation"],
+      design: [
+        `Micro-niche: ${keyword} + profession/breed/region`,
+        `Humor specific to the community`,
+        `Premium minimalist designs`,
+      ],
+      avoid: ["Generic designs on this keyword", "Pricing too low against big sellers", "No personalization"],
     };
   }
 
   return {
-    verdict: "Bonne opportunité POD",
+    verdict: "Great POD Opportunity",
     emoji: "✅",
     color: "#34d399",
     bg: "rgba(52,211,153,0.06)",
     border: "rgba(52,211,153,0.2)",
     reasons: [
-      `Demande solide${isRising ? " et en hausse" : ""} — acheteurs actifs sur cette niche`,
-      competition === "Low" ? "Faible concurrence — facile à ranker rapidement" : "Concurrence gérable avec le bon angle",
-      "Niche personnalisable et différenciable",
+      `Solid demand${isRising ? " and growing" : ""} — active buyers in this niche`,
+      competition === "Low" ? "Low competition — easy to rank quickly" : "Manageable competition with the right angle",
+      "Personalizable and differentiable niche",
     ],
     design: [
-      `${keyword} avec citation humoristique ou motivante`,
-      `${keyword} + événement (anniversaire, Noël, fête des mères)`,
-      `Designs minimalistes premium avec ${keyword}`,
-      `${keyword} + profession ou hobby secondaire`,
+      `${keyword} with humorous or motivational quote`,
+      `${keyword} + event (birthday, Christmas, Mother's Day)`,
+      `Premium minimalist designs with ${keyword}`,
+      `${keyword} + secondary profession or hobby`,
     ],
-    avoid: ["Designs trop génériques", "Copier les bestsellers sans angle unique"],
+    avoid: ["Too generic designs", "Copying bestsellers without a unique angle"],
   };
 }
 
@@ -110,7 +117,7 @@ export default function Dashboard() {
         body: JSON.stringify({ keyword: query.trim().toLowerCase() }),
       });
       const data = await res.json();
-      if (data.error === "trial_expired") setLimitError("Votre trial a expiré. Upgradez pour continuer.");
+      if (data.error === "trial_expired") setLimitError("Your trial has expired. Upgrade to continue.");
       else if (data.error === "limit_reached") setLimitError(data.message);
       else if (data.error || !data.related?.length) setNoResult(true);
       else { setResult(data); setSearched(query); }
@@ -119,7 +126,7 @@ export default function Dashboard() {
   }
 
   const nav = [
-    { label: "Décision POD", path: "/dashboard", emoji: "🎯", active: true },
+    { label: "POD Decision", path: "/dashboard", emoji: "🎯", active: true },
     { label: "Competition", path: "/competition", emoji: "📊" },
     { label: "Trends", path: "/trends", emoji: "📈" },
     { label: "Tag Generator", path: "/tags", emoji: "🏷️" },
@@ -129,13 +136,6 @@ export default function Dashboard() {
   ];
 
   const chips = ["dog mom", "nurse gift", "teacher gift", "halloween witch", "cat lover", "birthday queen", "vintage retro", "funny dad"];
-
-  const compColors: any = {
-    Low: { bg: "#0d2b1f", text: "#34d399", border: "#065f46" },
-    Medium: { bg: "#2b1f06", text: "#fbbf24", border: "#78350f" },
-    High: { bg: "#2b0f0f", text: "#f87171", border: "#7f1d1d" },
-  };
-
   const verdict = result ? getPODVerdict(result.volume, result.competition, result.trend, searched) : null;
 
   return (
@@ -237,27 +237,27 @@ export default function Dashboard() {
               <div className="rk-dot" style={{ background: "#fbbf24" }} />
               <span style={{ fontSize: 12, color: "#475569" }}>{LIVE[liveIdx]}</span>
             </div>
-            <span style={{ fontSize: 12, color: "#334155" }}>Rankify · Décisions POD en temps réel</span>
+            <span style={{ fontSize: 12, color: "#334155" }}>Rankify · Real-time POD decisions</span>
           </div>
 
           <div className="rk-content">
-            <div className="rk-hero-title">Arrêtez de designer à l'aveugle.</div>
-            <div className="rk-hero-sub">Vendez ce que les acheteurs POD recherchent déjà — décision en 10 secondes.</div>
+            <div className="rk-hero-title">Stop designing blind.</div>
+            <div className="rk-hero-sub">Sell what POD buyers are already searching for — clear decision in 10 seconds.</div>
 
             <div className="rk-search-row">
               <input className="rk-input" value={query}
                 onChange={e => setQuery(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && handleAnalyze()}
-                placeholder='Entrez une niche — "dog mom", "nurse gift", "halloween witch"...' />
+                placeholder='Enter a niche — "dog mom", "nurse gift", "halloween witch"...' />
               <button className="rk-btn" onClick={handleAnalyze} disabled={loading}>
-                {loading ? "Analyse..." : "Analyser →"}
+                {loading ? "Analyzing..." : "Analyze →"}
               </button>
             </div>
 
             {!result && !limitError && (
               <div className="rk-chips">
                 {chips.map(c => (
-                  <button key={c} className="rk-chip" onClick={() => { setQuery(c); }}>{c}</button>
+                  <button key={c} className="rk-chip" onClick={() => setQuery(c)}>{c}</button>
                 ))}
               </div>
             )}
@@ -275,13 +275,13 @@ export default function Dashboard() {
             {loading && (
               <div className="rk-loading">
                 <div className="rk-spinner" />
-                <span style={{ fontSize: 13, color: "#475569" }}>Analyse du marché POD en cours...</span>
+                <span style={{ fontSize: 13, color: "#475569" }}>Analyzing POD market...</span>
               </div>
             )}
 
             {noResult && !loading && (
               <div style={{ textAlign: "center", padding: "32px", color: "#334155", fontSize: 13 }}>
-                Aucune donnée pour "{query}" — essayez un autre mot-clé
+                No data for "{query}" — try a different keyword
               </div>
             )}
 
@@ -296,7 +296,7 @@ export default function Dashboard() {
                   <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                     {result.searchesLeft !== undefined && (
                       <span style={{ fontSize: 11, padding: "4px 10px", borderRadius: 20, background: "rgba(129,140,248,0.1)", color: "#818cf8", fontWeight: 600 }}>
-                        {result.searchesLeft} analyses restantes
+                        {result.searchesLeft} analyses left
                       </span>
                     )}
                     <button onClick={() => { setResult(null); setQuery(""); setSearched(""); setShowData(false); }}
@@ -306,12 +306,11 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                {/* VERDICT POD — Toujours en premier */}
                 <div className="rk-verdict" style={{ background: verdict.bg, border: `1px solid ${verdict.border}` }}>
                   <div className="rk-verdict-header">
                     <span className="rk-verdict-emoji">{verdict.emoji}</span>
                     <div>
-                      <div style={{ fontSize: 11, fontWeight: 600, color: verdict.color, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 4 }}>Verdict POD</div>
+                      <div style={{ fontSize: 11, fontWeight: 600, color: verdict.color, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 4 }}>POD Verdict</div>
                       <div className="rk-verdict-title" style={{ color: verdict.color }}>{verdict.verdict}</div>
                     </div>
                   </div>
@@ -326,42 +325,39 @@ export default function Dashboard() {
                   </div>
 
                   {verdict.design.length > 0 && (
-                    <div>
-                      <div className="rk-design-grid">
-                        <div>
-                          <div className="rk-design-label" style={{ color: verdict.color }}>✏️ Quoi designer</div>
-                          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                            {verdict.design.map((d: string, i: number) => (
-                              <div key={i} className="rk-design-card">→ {d}</div>
-                            ))}
-                          </div>
+                    <div className="rk-design-grid">
+                      <div>
+                        <div className="rk-design-label" style={{ color: verdict.color }}>✏️ What to design</div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                          {verdict.design.map((d: string, i: number) => (
+                            <div key={i} className="rk-design-card">→ {d}</div>
+                          ))}
                         </div>
-                        <div>
-                          <div className="rk-design-label" style={{ color: "#f87171" }}>🚫 Quoi éviter</div>
-                          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                            {verdict.avoid.map((d: string, i: number) => (
-                              <div key={i} className="rk-design-card">✕ {d}</div>
-                            ))}
-                          </div>
+                      </div>
+                      <div>
+                        <div className="rk-design-label" style={{ color: "#f87171" }}>🚫 What to avoid</div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                          {verdict.avoid.map((d: string, i: number) => (
+                            <div key={i} className="rk-design-card">✕ {d}</div>
+                          ))}
                         </div>
                       </div>
                     </div>
                   )}
                 </div>
 
-                {/* Toggle Data */}
                 <button className="rk-data-toggle" onClick={() => setShowData(!showData)}>
                   <span style={{ fontSize: 16 }}>{showData ? "▾" : "▸"}</span>
-                  {showData ? "Masquer les données" : "Voir les données (preuve)"}
+                  {showData ? "Hide data" : "View data (proof)"}
                 </button>
 
                 {showData && (
                   <div className="rk-fade">
                     <div className="rk-stats">
                       {[
-                        { label: "Recherches/mois", value: result.volume, sub: result.trend, color: result.trend?.startsWith("↑") ? "#34d399" : result.trend?.startsWith("↓") ? "#f87171" : "#fbbf24" },
-                        { label: "Concurrence", value: result.competition, sub: `Score ${result.compScore}/100`, color: result.competition === "Low" ? "#34d399" : result.competition === "Medium" ? "#fbbf24" : "#f87171" },
-                        { label: "Opportunité", value: result.opportunity, sub: "Analyse en temps réel", color: "#a5b4fc" },
+                        { label: "Monthly Searches", value: result.volume, sub: result.trend, color: result.trend?.startsWith("↑") ? "#34d399" : result.trend?.startsWith("↓") ? "#f87171" : "#fbbf24" },
+                        { label: "Competition", value: result.competition, sub: `Score ${result.compScore}/100`, color: result.competition === "Low" ? "#34d399" : result.competition === "Medium" ? "#fbbf24" : "#f87171" },
+                        { label: "Opportunity", value: result.opportunity, sub: "Real-time analysis", color: "#a5b4fc" },
                       ].map((s, i) => (
                         <div key={i} className="rk-stat">
                           <div className="rk-stat-label">{s.label}</div>
@@ -373,22 +369,26 @@ export default function Dashboard() {
 
                     <div className="rk-table-card">
                       <div className="rk-table-head">
-                        <span className="rk-table-title">Mots-clés associés — {result.related.length} résultats</span>
+                        <span className="rk-table-title">Related Keywords — {result.related.length} results</span>
                         <div className="rk-dot" />
                       </div>
                       <table className="rkt">
                         <thead>
                           <tr>
-                            <th>Mot-clé</th>
-                            <th>Recherches/mois</th>
-                            <th>Concurrence</th>
-                            <th>Tendance</th>
+                            <th>Keyword</th>
+                            <th>Searches/mo</th>
+                            <th>Competition</th>
+                            <th>Trend</th>
                           </tr>
                         </thead>
                         <tbody>
                           {result.related.map((row: any, i: number) => {
-                            const compMap: Record<string, {bg: string; text: string; border: string}> = { Low: { bg: "#0d2b1f", text: "#34d399", border: "#065f46" }, Medium: { bg: "#2b1f06", text: "#fbbf24", border: "#78350f" }, High: { bg: "#2b0f0f", text: "#f87171", border: "#7f1d1d" } };
-const cc = compMap[row.comp] || compMap.High;
+                            const compMap: Record<string, {bg: string; text: string; border: string}> = {
+                              Low: { bg: "#0d2b1f", text: "#34d399", border: "#065f46" },
+                              Medium: { bg: "#2b1f06", text: "#fbbf24", border: "#78350f" },
+                              High: { bg: "#2b0f0f", text: "#f87171", border: "#7f1d1d" },
+                            };
+                            const cc = compMap[row.comp] || compMap.High;
                             const tc = row.trend?.startsWith("↑") ? "#34d399" : row.trend?.startsWith("↓") ? "#f87171" : "#fbbf24";
                             return (
                               <tr key={i}>
@@ -414,9 +414,9 @@ const cc = compMap[row.comp] || compMap.High;
             {!result && !noResult && !loading && !limitError && (
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 280, textAlign: "center" }}>
                 <div style={{ fontSize: 40, marginBottom: 16, opacity: 0.15 }}>🎯</div>
-                <div style={{ fontSize: 16, fontWeight: 600, color: "#334155", marginBottom: 8 }}>Prêt à analyser</div>
+                <div style={{ fontSize: 16, fontWeight: 600, color: "#334155", marginBottom: 8 }}>Ready to analyze</div>
                 <div style={{ fontSize: 13, color: "#1e293b", maxWidth: 320, lineHeight: 1.6 }}>
-                  Entrez une niche POD pour obtenir une décision claire — quoi designer, quoi éviter.
+                  Enter a POD niche to get a clear decision — what to design, what to avoid.
                 </div>
               </div>
             )}
