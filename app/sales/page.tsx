@@ -31,14 +31,14 @@ export default function SalesEstimator() {
   const [listings, setListings] = useState(10);
   const [result, setResult] = useState<any>(null);
 
-  const menuItems = [
-    { icon: "🔍", label: "Keyword Research", path: "/dashboard" },
-    { icon: "📊", label: "Competition", path: "/competition" },
-    { icon: "📈", label: "Trends", path: "/trends" },
-    { icon: "🏷️", label: "Tag Generator", path: "/tags" },
-    { icon: "⭐", label: "Listing Optimizer", path: "/listing" },
-    { icon: "📋", label: "Sales Estimator", path: "/sales", active: true },
-    { icon: "🎨", label: "POD Research", path: "/pod", isNew: true },
+  const nav = [
+    { label: "Keyword Research", path: "/dashboard", emoji: "🔍" },
+    { label: "Competition", path: "/competition", emoji: "📊" },
+    { label: "Trends", path: "/trends", emoji: "📈" },
+    { label: "Tag Generator", path: "/tags", emoji: "🏷️" },
+    { label: "Listing Optimizer", path: "/listing", emoji: "⭐" },
+    { label: "Sales Estimator", path: "/sales", emoji: "💰", active: true },
+    { label: "POD Research", path: "/pod", emoji: "🎨", badge: "NEW" },
   ];
 
   const calculate = () => {
@@ -48,154 +48,203 @@ export default function SalesEstimator() {
     const margin = ((netProfit / sellPrice) * 100).toFixed(1);
     const competitionFactor = (100 - niche.competition) / 100;
     const searchFactor = Math.min(niche.monthlySearches / 10000, 1);
-    const conversionRate = 0.02;
     const estimatedVisitors = niche.monthlySearches * searchFactor * competitionFactor * listings * 0.01;
-    const monthlySales = Math.floor(estimatedVisitors * conversionRate * listings);
+    const monthlySales = Math.max(Math.floor(estimatedVisitors * 0.02 * listings), 1);
     const monthlyRevenue = (monthlySales * sellPrice).toFixed(2);
     const monthlyProfit = (monthlySales * netProfit).toFixed(2);
     const yearlyProfit = (Number(monthlyProfit) * 12).toFixed(2);
-
     setResult({
-      netProfit: netProfit.toFixed(2),
-      margin,
-      monthlySales,
-      monthlyRevenue,
-      monthlyProfit,
-      yearlyProfit,
-      breakEven: Math.ceil(product.printCost / netProfit),
+      netProfit: netProfit.toFixed(2), margin, monthlySales,
+      monthlyRevenue, monthlyProfit, yearlyProfit,
       rating: netProfit > 12 && monthlySales > 50 ? "Excellent" : netProfit > 8 && monthlySales > 20 ? "Good" : "Low",
     });
   };
 
-  const getRatingColor = (r: string) => r === "Excellent" ? "text-green-400" : r === "Good" ? "text-yellow-400" : "text-red-400";
+  const ratingColor = (r: string) => r === "Excellent" ? "#34d399" : r === "Good" ? "#fbbf24" : "#f87171";
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex">
-      <aside className="w-52 border-r border-white/10 p-4 flex flex-col gap-1 shrink-0">
-        <div className="text-xl font-black text-white mb-6">
-          Rank<span className="text-purple-400">ify</span>
-        </div>
-        {menuItems.map((item, i) => (
-          <button key={i} onClick={() => router.push(item.path)}
-            className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition text-left
-              ${item.active ? "bg-purple-600/30 text-purple-300" : "text-white/50 hover:text-white hover:bg-white/5"}`}>
-            <span>{item.icon}</span>
-            <span>{item.label}</span>
-            {item.isNew && <span className="ml-auto bg-orange-500 text-white text-xs px-1.5 py-0.5 rounded-full font-semibold">NEW</span>}
-          </button>
-        ))}
-      </aside>
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+        .rk { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: #0f1623; color: #cbd5e1; min-height: 100vh; display: flex; }
+        .rk-side { width: 228px; background: #111827; border-right: 1px solid rgba(255,255,255,0.07); display: flex; flex-direction: column; flex-shrink: 0; padding: 24px 14px 20px; }
+        .rk-logo { font-size: 18px; font-weight: 700; color: #f8fafc; letter-spacing: -0.03em; padding: 0 6px; margin-bottom: 8px; }
+        .rk-logo em { font-style: normal; color: #818cf8; }
+        .rk-live-row { display: flex; align-items: center; gap: 6px; padding: 0 6px; margin-bottom: 28px; }
+        .rk-dot { width: 7px; height: 7px; border-radius: 50%; background: #34d399; animation: dpulse 2s ease infinite; }
+        .rk-live-label { font-size: 11px; font-weight: 500; color: #34d399; letter-spacing: 0.04em; }
+        .rk-section-label { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.2); letter-spacing: 0.12em; text-transform: uppercase; padding: 0 6px; margin-bottom: 6px; }
+        .rk-nav { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+        .rk-navbtn { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 10px; cursor: pointer; border: 1px solid transparent; background: none; color: #64748b; font-size: 13px; font-weight: 500; width: 100%; text-align: left; transition: all 0.15s; font-family: inherit; }
+        .rk-navbtn:hover { background: rgba(255,255,255,0.05); color: #e2e8f0; }
+        .rk-navbtn-active { background: rgba(129,140,248,0.12) !important; border-color: rgba(129,140,248,0.25) !important; color: #a5b4fc !important; }
+        .rk-new-badge { margin-left: auto; font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 20px; background: rgba(251,146,60,0.18); color: #fb923c; }
+        .rk-upgrade { margin-top: auto; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.06); }
+        .rk-upgrade-btn { width: 100%; padding: 10px 16px; border-radius: 10px; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; font-size: 13px; font-weight: 600; border: none; cursor: pointer; font-family: inherit; }
+        .rk-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+        .rk-topbar { height: 48px; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; padding: 0 36px; background: #0f1623; flex-shrink: 0; }
+        .rk-content { flex: 1; padding: 36px 40px; overflow-y: auto; }
+        .rk-title { font-size: 22px; font-weight: 700; color: #f1f5f9; letter-spacing: -0.025em; margin-bottom: 6px; }
+        .rk-sub { font-size: 13px; color: #475569; margin-bottom: 28px; }
+        .rk-card { background: #1e293b; border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 20px 22px; margin-bottom: 16px; }
+        .rk-card-title { font-size: 11px; font-weight: 600; color: #475569; letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 14px; }
+        .rk-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+        .rk-pill { padding: 7px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid rgba(255,255,255,0.07); background: rgba(255,255,255,0.03); color: #475569; transition: all 0.12s; font-family: inherit; }
+        .rk-pill:hover { background: rgba(99,102,241,0.1); border-color: rgba(99,102,241,0.3); color: #a5b4fc; }
+        .rk-pill-active { background: rgba(99,102,241,0.15) !important; border-color: rgba(99,102,241,0.4) !important; color: #a5b4fc !important; }
+        .rk-grid2 { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; margin-bottom: 16px; }
+        .rk-input-wrap { display: flex; align-items: center; gap: 8px; }
+        .rk-input { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 10px 14px; color: #e2e8f0; font-size: 14px; outline: none; font-family: inherit; width: 120px; transition: all 0.15s; }
+        .rk-input:focus { border-color: rgba(129,140,248,0.6); }
+        .rk-calc-btn { width: 100%; padding: 14px; border-radius: 12px; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; font-size: 15px; font-weight: 700; border: none; cursor: pointer; font-family: inherit; transition: all 0.15s; margin-bottom: 20px; letter-spacing: 0.01em; }
+        .rk-calc-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        .rk-stats { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; margin-bottom: 16px; }
+        .rk-stat { background: #1e293b; border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 16px 18px; }
+        .rk-stat-label { font-size: 10px; font-weight: 600; color: #475569; letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 10px; }
+        .rk-stat-val { font-size: 22px; font-weight: 700; }
+        .rk-stat-sub { font-size: 11px; color: #475569; margin-top: 3px; }
+        .rk-big-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; margin-bottom: 16px; }
+        .rk-big-stat { background: #1e293b; border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 20px 22px; }
+        .rk-fade { animation: rkfade 0.35s ease; }
+        @keyframes rkfade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes dpulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+      `}</style>
 
-      <div className="flex-1 p-8 overflow-auto">
-        <div className="mb-8">
-          <h1 className="text-2xl font-black text-white mb-1">📋 Sales Estimator</h1>
-          <p className="text-white/40 text-sm">Estimate your monthly sales and profit before you design</p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-            <p className="text-white/50 text-xs font-bold uppercase mb-4">Product Type</p>
-            <div className="flex flex-wrap gap-2">
-              {PRODUCTS.map(p => (
-                <button key={p.name} onClick={() => { setProduct(p); setSellPrice(p.avgPrice); }}
-                  className={`px-3 py-2 rounded-xl text-xs font-semibold transition ${product.name === p.name ? "bg-purple-600 text-white" : "bg-white/5 text-white/50 hover:bg-white/10"}`}>
-                  {p.name} (${p.printCost})
-                </button>
-              ))}
-            </div>
+      <div className="rk">
+        <aside className="rk-side">
+          <div className="rk-logo">Rank<em>ify</em></div>
+          <div className="rk-live-row"><div className="rk-dot" /><span className="rk-live-label">Live data</span></div>
+          <div className="rk-section-label">Tools</div>
+          <nav className="rk-nav">
+            {nav.map(item => (
+              <button key={item.path} onClick={() => router.push(item.path)}
+                className={`rk-navbtn ${item.active ? "rk-navbtn-active" : ""}`}>
+                <span style={{ fontSize: 14, width: 20, textAlign: "center" }}>{item.emoji}</span>
+                <span>{item.label}</span>
+                {item.badge && <span className="rk-new-badge">{item.badge}</span>}
+              </button>
+            ))}
+          </nav>
+          <div className="rk-upgrade">
+            <button className="rk-upgrade-btn" onClick={() => router.push("/pricing")}>↑ Upgrade Plan</button>
           </div>
+        </aside>
 
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-            <p className="text-white/50 text-xs font-bold uppercase mb-4">Niche</p>
-            <div className="flex flex-wrap gap-2">
-              {NICHES.map(n => (
-                <button key={n.name} onClick={() => setNiche(n)}
-                  className={`px-3 py-2 rounded-xl text-xs font-semibold transition ${niche.name === n.name ? "bg-purple-600 text-white" : "bg-white/5 text-white/50 hover:bg-white/10"}`}>
-                  {n.name}
-                </button>
-              ))}
-            </div>
+        <div className="rk-main">
+          <div className="rk-topbar">
+            <span style={{ fontSize: 12, color: "#334155" }}>Sales Estimator · Profit calculator with Etsy fees</span>
           </div>
-        </div>
+          <div className="rk-content">
+            <div className="rk-title">💰 Sales Estimator</div>
+            <div className="rk-sub">Estimate your monthly sales and profit before you design</div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-            <p className="text-white/50 text-xs font-bold uppercase mb-4">Selling Price</p>
-            <div className="flex items-center gap-3">
-              <span className="text-white/50">$</span>
-              <input type="number" value={sellPrice} onChange={e => setSellPrice(Number(e.target.value))}
-                className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white w-32 focus:outline-none focus:border-purple-500" />
-            </div>
-          </div>
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-            <p className="text-white/50 text-xs font-bold uppercase mb-4">Number of Listings</p>
-            <div className="flex gap-2 flex-wrap">
-              {[5, 10, 25, 50, 100].map(n => (
-                <button key={n} onClick={() => setListings(n)}
-                  className={`px-4 py-2 rounded-xl text-xs font-semibold transition ${listings === n ? "bg-purple-600 text-white" : "bg-white/5 text-white/50 hover:bg-white/10"}`}>
-                  {n}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <button onClick={calculate}
-          className="w-full bg-purple-600 hover:bg-purple-500 text-white py-4 rounded-2xl font-bold text-lg transition mb-6">
-          Calculate My Potential 🚀
-        </button>
-
-        {result && (
-          <>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              {[
-                { label: "Profit per Sale", value: `$${result.netProfit}`, sub: `${result.margin}% margin`, color: "text-green-400" },
-                { label: "Est. Monthly Sales", value: result.monthlySales, sub: `${listings} listings`, color: "text-white" },
-                { label: "Monthly Revenue", value: `$${result.monthlyRevenue}`, sub: "gross", color: "text-white" },
-                { label: "Monthly Profit", value: `$${result.monthlyProfit}`, sub: "after all fees", color: "text-green-400" },
-              ].map((s, i) => (
-                <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-5">
-                  <p className="text-white/40 text-xs mb-1">{s.label}</p>
-                  <p className={`text-2xl font-black ${s.color}`}>{s.value}</p>
-                  <p className="text-white/30 text-xs mt-1">{s.sub}</p>
+            <div className="rk-grid2">
+              <div className="rk-card">
+                <div className="rk-card-title">Product Type</div>
+                <div className="rk-pills">
+                  {PRODUCTS.map(p => (
+                    <button key={p.name} onClick={() => { setProduct(p); setSellPrice(p.avgPrice); }}
+                      className={`rk-pill ${product.name === p.name ? "rk-pill-active" : ""}`}>
+                      {p.name} · ${p.printCost}
+                    </button>
+                  ))}
                 </div>
-              ))}
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
-                <p className="text-white/40 text-xs mb-1">Yearly Profit Potential</p>
-                <p className="text-3xl font-black text-purple-300">${result.yearlyProfit}</p>
-                <p className="text-white/30 text-xs mt-1">if sales stay consistent</p>
               </div>
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
-                <p className="text-white/40 text-xs mb-1">Overall Rating</p>
-                <p className={`text-3xl font-black ${getRatingColor(result.rating)}`}>{result.rating}</p>
-                <p className="text-white/30 text-xs mt-1">based on margin & volume</p>
+              <div className="rk-card">
+                <div className="rk-card-title">Niche</div>
+                <div className="rk-pills">
+                  {NICHES.map(n => (
+                    <button key={n.name} onClick={() => setNiche(n)}
+                      className={`rk-pill ${niche.name === n.name ? "rk-pill-active" : ""}`}>
+                      {n.name}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
-            <div className={`rounded-2xl p-5 border ${result.rating === "Excellent" ? "bg-green-500/10 border-green-500/30" : result.rating === "Good" ? "bg-yellow-500/10 border-yellow-500/30" : "bg-red-500/10 border-red-500/30"}`}>
-              <p className="font-bold text-white mb-1">
-                {result.rating === "Excellent" ? "✅ Great opportunity!" : result.rating === "Good" ? "⚠️ Decent opportunity" : "❌ Low potential"}
-              </p>
-              <p className="text-white/60 text-sm">
-                {result.rating === "Excellent"
-                  ? `${product.name} in ${niche.name} niche looks very profitable. Upload ${listings} listings and expect strong returns.`
-                  : result.rating === "Good"
-                  ? `Decent potential. Consider raising your price by $2-5 or adding more listings to increase returns.`
-                  : `Margins are thin or competition is too high. Try a different niche or product type.`}
-              </p>
+            <div className="rk-grid2">
+              <div className="rk-card">
+                <div className="rk-card-title">Selling Price</div>
+                <div className="rk-input-wrap">
+                  <span style={{ color: "#475569", fontSize: 16 }}>$</span>
+                  <input type="number" value={sellPrice} onChange={e => setSellPrice(Number(e.target.value))} className="rk-input" />
+                </div>
+              </div>
+              <div className="rk-card">
+                <div className="rk-card-title">Number of Listings</div>
+                <div className="rk-pills">
+                  {[5, 10, 25, 50, 100].map(n => (
+                    <button key={n} onClick={() => setListings(n)}
+                      className={`rk-pill ${listings === n ? "rk-pill-active" : ""}`}>
+                      {n}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
-          </>
-        )}
 
-        {!result && (
-          <div className="flex flex-col items-center justify-center h-32 text-center">
-            <p className="text-white/30 text-sm">Select your product, niche and price then click Calculate</p>
+            <button className="rk-calc-btn" onClick={calculate}>
+              Calculate My Potential 🚀
+            </button>
+
+            {result && (
+              <div className="rk-fade">
+                <div className="rk-stats">
+                  {[
+                    { label: "Profit/Sale", value: `$${result.netProfit}`, sub: `${result.margin}% margin`, color: "#34d399" },
+                    { label: "Est. Monthly Sales", value: result.monthlySales, sub: `${listings} listings`, color: "#e2e8f0" },
+                    { label: "Monthly Revenue", value: `$${result.monthlyRevenue}`, sub: "gross", color: "#e2e8f0" },
+                    { label: "Monthly Profit", value: `$${result.monthlyProfit}`, sub: "after all fees", color: "#34d399" },
+                  ].map((s, i) => (
+                    <div key={i} className="rk-stat">
+                      <div className="rk-stat-label">{s.label}</div>
+                      <div className="rk-stat-val" style={{ color: s.color }}>{s.value}</div>
+                      <div className="rk-stat-sub">{s.sub}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="rk-big-grid">
+                  <div className="rk-big-stat">
+                    <div className="rk-stat-label">Yearly Profit Potential</div>
+                    <div style={{ fontSize: 32, fontWeight: 700, color: "#a5b4fc", marginTop: 8 }}>${result.yearlyProfit}</div>
+                    <div className="rk-stat-sub" style={{ marginTop: 4 }}>if sales stay consistent</div>
+                  </div>
+                  <div className="rk-big-stat">
+                    <div className="rk-stat-label">Overall Rating</div>
+                    <div style={{ fontSize: 32, fontWeight: 700, color: ratingColor(result.rating), marginTop: 8 }}>{result.rating}</div>
+                    <div className="rk-stat-sub" style={{ marginTop: 4 }}>based on margin & volume</div>
+                  </div>
+                </div>
+
+                <div style={{
+                  borderRadius: 14, padding: "16px 22px",
+                  background: result.rating === "Excellent" ? "rgba(52,211,153,0.06)" : result.rating === "Good" ? "rgba(251,191,36,0.06)" : "rgba(248,113,113,0.06)",
+                  border: `1px solid ${result.rating === "Excellent" ? "rgba(52,211,153,0.2)" : result.rating === "Good" ? "rgba(251,191,36,0.2)" : "rgba(248,113,113,0.2)"}`,
+                }}>
+                  <div style={{ fontWeight: 700, color: ratingColor(result.rating), marginBottom: 6, fontSize: 14 }}>
+                    {result.rating === "Excellent" ? "✅ Great opportunity!" : result.rating === "Good" ? "⚠️ Decent opportunity" : "❌ Low potential"}
+                  </div>
+                  <div style={{ fontSize: 13, color: "#64748b", lineHeight: 1.6 }}>
+                    {result.rating === "Excellent"
+                      ? `${product.name} in ${niche.name} niche looks very profitable. Upload ${listings} listings and expect strong returns.`
+                      : result.rating === "Good"
+                      ? `Decent potential. Consider raising your price by $2-5 or adding more listings to increase returns.`
+                      : `Margins are thin or competition is too high. Try a different niche or product type.`}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {!result && (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 120, textAlign: "center" }}>
+                <div style={{ fontSize: 13, color: "#334155" }}>Select your product, niche and price then click Calculate</div>
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
-    </main>
+    </>
   );
 }
