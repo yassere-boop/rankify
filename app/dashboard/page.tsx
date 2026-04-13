@@ -387,7 +387,8 @@ export default function Dashboard() {
                         </thead>
                         <tbody>
                           {result.related.map((row: any, i: number) => {
-                            const cc = { Low: { bg: "#0d2b1f", text: "#34d399", border: "#065f46" }, Medium: { bg: "#2b1f06", text: "#fbbf24", border: "#78350f" }, High: { bg: "#2b0f0f", text: "#f87171", border: "#7f1d1d" } }[row.comp] || compColors.High;
+                            const compMap: Record<string, {bg: string; text: string; border: string}> = { Low: { bg: "#0d2b1f", text: "#34d399", border: "#065f46" }, Medium: { bg: "#2b1f06", text: "#fbbf24", border: "#78350f" }, High: { bg: "#2b0f0f", text: "#f87171", border: "#7f1d1d" } };
+const cc = compMap[row.comp] || compMap.High;
                             const tc = row.trend?.startsWith("↑") ? "#34d399" : row.trend?.startsWith("↓") ? "#f87171" : "#fbbf24";
                             return (
                               <tr key={i}>
