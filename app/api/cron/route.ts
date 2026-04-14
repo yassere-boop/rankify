@@ -10,11 +10,14 @@ export async function GET(req: NextRequest) {
   const { error } = await supabaseAdmin
     .from("users")
     .update({ searches_used: 0 })
-    .neq("plan", "trial");
+    .in("plan", ["starter", "pro"]);
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ success: true, message: "Monthly searches reset done" });
+  return NextResponse.json({ 
+    success: true, 
+    message: "Monthly searches reset done for starter and pro plans" 
+  });
 }
