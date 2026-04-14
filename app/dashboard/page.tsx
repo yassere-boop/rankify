@@ -13,33 +13,73 @@ function getPODVerdict(volume: string, competition: string, trend: string, keywo
 
   if (isGeneric && isHighComp) {
     return {
-      verdict: "Avoid for POD", emoji: "🚫", color: "#f87171",
-      bg: "rgba(248,113,113,0.06)", border: "rgba(248,113,113,0.2)",
-      reasons: ["Keyword too generic — impossible to differentiate", "Extreme saturation — thousands of similar designs already", "Margins crushed by competition"],
-      design: [], avoid: ["Designs without a specific angle", "Generic text without humor or niche", "Copying existing bestsellers"],
+      verdict: "Avoid for POD",
+      emoji: "🚫",
+      color: "#f87171",
+      bg: "rgba(248,113,113,0.06)",
+      border: "rgba(248,113,113,0.2)",
+      warning: null,
+      reasons: [
+        "Keyword too generic — impossible to differentiate",
+        "Extreme saturation — thousands of similar designs already",
+        "Margins crushed by competition",
+      ],
+      design: [],
+      avoid: ["Designs without a specific angle", "Generic text without humor or niche", "Copying existing bestsellers"],
     };
   }
+
   if (!hasVolume) {
     return {
-      verdict: "Possible with strong niche", emoji: "⚠️", color: "#fbbf24",
-      bg: "rgba(251,191,36,0.06)", border: "rgba(251,191,36,0.2)",
-      reasons: ["Low demand — niche market only", "Little competition — easy to rank if well targeted", "Works well with strong personalization"],
-      design: [`${keyword} with humor or unique quote`, `Personalized with name or date`, `Combined with another niche (e.g. ${keyword} + nurse)`],
+      verdict: "Possible — only if you niche down.",
+      emoji: "⚠️",
+      color: "#fbbf24",
+      bg: "rgba(251,191,36,0.06)",
+      border: "rgba(251,191,36,0.2)",
+      warning: "We recommend this ONLY if you niche down.",
+      reasons: [
+        "Low demand — niche market only",
+        "Little competition — easy to rank if well targeted",
+        "Works well with strong personalization",
+      ],
+      design: [
+        `${keyword} with humor or unique quote`,
+        `Personalized with name or date`,
+        `Combined with another niche (e.g. ${keyword} + nurse)`,
+      ],
       avoid: ["Designs without personalization", "Waiting for high volume that won't come"],
     };
   }
+
   if (isHighComp && !isRising) {
     return {
-      verdict: "Possible with strong niche", emoji: "⚠️", color: "#fbbf24",
-      bg: "rgba(251,191,36,0.06)", border: "rgba(251,191,36,0.2)",
-      reasons: ["Good demand but high saturation", "Profitable only with a very specific angle", "Personalization is your only weapon here"],
-      design: [`Micro-niche: ${keyword} + profession/breed/region`, `Humor specific to the community`, `Premium minimalist designs`],
+      verdict: "Possible — only if you niche down.",
+      emoji: "⚠️",
+      color: "#fbbf24",
+      bg: "rgba(251,191,36,0.06)",
+      border: "rgba(251,191,36,0.2)",
+      warning: "We recommend this ONLY if you niche down.",
+      reasons: [
+        "Good demand but high saturation",
+        "Profitable only with a very specific angle",
+        "Personalization is your only weapon here",
+      ],
+      design: [
+        `Micro-niche: ${keyword} + profession/breed/region`,
+        `Humor specific to the community`,
+        `Premium minimalist designs`,
+      ],
       avoid: ["Generic designs on this keyword", "Pricing too low against big sellers", "No personalization"],
     };
   }
+
   return {
-    verdict: "Great POD Opportunity", emoji: "✅", color: "#34d399",
-    bg: "rgba(52,211,153,0.06)", border: "rgba(52,211,153,0.2)",
+    verdict: "Great POD Opportunity",
+    emoji: "✅",
+    color: "#34d399",
+    bg: "rgba(52,211,153,0.06)",
+    border: "rgba(52,211,153,0.2)",
+    warning: null,
     reasons: [
       `Solid demand${isRising ? " and growing" : ""} — active buyers in this niche`,
       competition === "Low" ? "Low competition — easy to rank quickly" : "Manageable competition with the right angle",
@@ -126,8 +166,9 @@ export default function Dashboard() {
         .rk-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
         .rk-topbar { height: 48px; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: space-between; padding: 0 36px; background: #0f1623; flex-shrink: 0; }
         .rk-content { flex: 1; padding: 36px 40px; overflow-y: auto; }
-        .rk-hero-title { font-size: 22px; font-weight: 700; color: #f1f5f9; letter-spacing: -0.025em; margin-bottom: 6px; }
-        .rk-hero-sub { font-size: 13px; color: #475569; margin-bottom: 28px; }
+        .rk-hero-title { font-size: 22px; font-weight: 700; color: #f1f5f9; letter-spacing: -0.025em; margin-bottom: 4px; }
+        .rk-hero-sub { font-size: 13px; color: #475569; margin-bottom: 4px; }
+        .rk-hero-promise { font-size: 12px; color: #6366f1; font-weight: 600; margin-bottom: 28px; }
         .rk-search-row { display: flex; gap: 10px; margin-bottom: 14px; }
         .rk-input { flex: 1; background: #1e293b; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 13px 18px; color: #e2e8f0; font-size: 14px; outline: none; font-family: inherit; transition: all 0.15s; }
         .rk-input::placeholder { color: #334155; }
@@ -142,9 +183,11 @@ export default function Dashboard() {
         .rk-verdict-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
         .rk-verdict-emoji { font-size: 28px; }
         .rk-verdict-title { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
-        .rk-verdict-reasons { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+        .rk-verdict-reasons { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
         .rk-verdict-reason { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: #cbd5e1; line-height: 1.5; }
         .rk-verdict-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+        .rk-verdict-proof { font-size: 11px; color: rgba(255,255,255,0.25); font-style: italic; margin-bottom: 16px; }
+        .rk-verdict-warning { font-size: 12px; font-weight: 700; color: #fbbf24; margin-bottom: 16px; padding: 8px 12px; background: rgba(251,191,36,0.08); border-radius: 8px; }
         .rk-design-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
         .rk-design-card { background: rgba(255,255,255,0.04); border-radius: 10px; padding: 12px 14px; font-size: 12px; color: #94a3b8; line-height: 1.5; border: 1px solid rgba(255,255,255,0.05); }
         .rk-design-label { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
@@ -209,8 +252,10 @@ export default function Dashboard() {
           </div>
 
           <div className="rk-content">
+            {/* HERO — promesse temporelle ajoutée */}
             <div className="rk-hero-title">Stop designing blind.</div>
-            <div className="rk-hero-sub">Sell what POD buyers are already searching for — clear decision in 10 seconds.</div>
+            <div className="rk-hero-sub">Sell what POD buyers are already searching for.</div>
+            <div className="rk-hero-promise">⚡ Get a clear POD decision in under 10 seconds.</div>
 
             <div className="rk-search-row">
               <input className="rk-input" value={query}
@@ -293,6 +338,18 @@ export default function Dashboard() {
                     ))}
                   </div>
 
+                  {/* Preuve data */}
+                  <div className="rk-verdict-proof">
+                    Verdict based on real market demand & competition data.
+                  </div>
+
+                  {/* Warning pour "Possible" */}
+                  {verdict.warning && (
+                    <div className="rk-verdict-warning">
+                      ⚠️ {verdict.warning}
+                    </div>
+                  )}
+
                   {/* PAYWALL — What to design/avoid */}
                   {verdict.design.length > 0 && (
                     isPro ? (
@@ -339,8 +396,12 @@ export default function Dashboard() {
                         <div className="rk-paywall-overlay">
                           <div style={{ fontSize: 16, marginBottom: 8 }}>🔒</div>
                           <div style={{ fontSize: 14, fontWeight: 700, color: "#f1f5f9", marginBottom: 6 }}>Pro Feature</div>
-                          <div style={{ fontSize: 12, color: "#475569", marginBottom: 16, textAlign: "center", maxWidth: 240 }}>
+                          <div style={{ fontSize: 12, color: "#475569", marginBottom: 8, textAlign: "center", maxWidth: 240 }}>
                             Unlock "What to design" & "What to avoid" with Pro
+                          </div>
+                          {/* Rappel de la décision avant paiement */}
+                          <div style={{ fontSize: 11, color: "#6366f1", marginBottom: 14, textAlign: "center", maxWidth: 260, fontStyle: "italic" }}>
+                            POD Verdict confirmed — you're upgrading to unlock exact guidance on what to design and avoid.
                           </div>
                           <button onClick={() => router.push("/pricing")}
                             style={{ background: "#6366f1", color: "#fff", border: "none", padding: "10px 24px", borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>

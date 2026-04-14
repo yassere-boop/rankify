@@ -45,6 +45,7 @@ export default function Onboarding() {
         .ob-btn:hover:not(:disabled) { background: #4f46e5; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(99,102,241,0.35); }
         .ob-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
         .ob-note { font-size: 12px; color: #334155; text-align: center; margin-top: 16px; line-height: 1.6; }
+        .ob-note-highlight { font-size: 11px; color: #475569; text-align: center; margin-top: 8px; padding: 8px 16px; background: rgba(99,102,241,0.06); border: 1px solid rgba(99,102,241,0.12); border-radius: 8px; line-height: 1.6; }
       `}</style>
 
       <div className="ob">
@@ -77,8 +78,10 @@ export default function Onboarding() {
           </button>
 
           <div className="ob-note">
-            Market data is already complete.<br />
-            Platform automation requires API approval.
+            Market data is already complete. Automation depends on platform APIs.
+          </div>
+          <div className="ob-note-highlight">
+            Your POD decision tool is ready to use immediately — no setup required.
           </div>
         </div>
       </div>
