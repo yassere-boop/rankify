@@ -27,7 +27,7 @@ export default function Home() {
         <nav className="relative z-10 flex items-center justify-between px-12 py-5 border-b border-white/[0.06]"
           style={{ background: "rgba(15,22,35,0.8)", backdropFilter: "blur(12px)" }}>
           <div style={{ fontSize: 18, fontWeight: 700, color: "#f8fafc", letterSpacing: "-0.03em" }}>
-            Rank<span style={{ color: "#818cf8" }}>ify</span>
+            Mark<span style={{ color: "#818cf8" }}>earn</span>
           </div>
           <div className="flex items-center gap-8">
             <Link href="/pricing" style={{ fontSize: 14, color: "#475569" }} className="hover:text-white transition-colors">Pricing</Link>
@@ -47,18 +47,18 @@ export default function Home() {
           <div className="inline-flex items-center gap-2 mb-10 px-5 py-2 rounded-full"
             style={{ background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.25)", fontSize: 13, color: "#a5b4fc" }}>
             <span className="w-2 h-2 rounded-full bg-green-400 pulse" style={{ flexShrink: 0 }} />
-            2,847 POD sellers making decisions right now
+            2,847 sellers making decisions right now
           </div>
 
           {/* Headline */}
           <h1 style={{ fontSize: "clamp(40px, 6vw, 68px)", fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 1.1, marginBottom: 24, maxWidth: 800 }}>
-            Stop designing blind.<br />
+            Stop selling blind.<br />
             <span style={{ color: "#818cf8" }}>Sell what buyers</span> are already<br />
             searching for.
           </h1>
 
           <p style={{ fontSize: 18, color: "#475569", maxWidth: 520, lineHeight: 1.7, marginBottom: 40, fontWeight: 400 }}>
-            Rankify analyzes real market data and tells you exactly <strong style={{ color: "#cbd5e1", fontWeight: 600 }}>what to design, what to avoid</strong> — before you spend hours creating.
+            Markearn analyzes real market data and tells you exactly <strong style={{ color: "#cbd5e1", fontWeight: 600 }}>what to sell, what to avoid</strong> — before you spend hours creating.
           </p>
 
           {/* CTAs */}
@@ -104,7 +104,7 @@ export default function Home() {
                 <div className="w-3 h-3 rounded-full" style={{ background: "#ffbd2e" }} />
                 <div className="w-3 h-3 rounded-full" style={{ background: "#28ca41" }} />
                 <div className="flex-1 mx-4 py-1 px-4 rounded-lg text-center" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", fontSize: 11, color: "#475569" }}>
-                  rankify.io/dashboard
+                  markearn.com/dashboard
                 </div>
               </div>
 
@@ -136,7 +136,7 @@ export default function Home() {
 
                 {/* Main */}
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#f1f5f9" }}>Stop designing blind.</div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#f1f5f9" }}>Stop selling blind.</div>
 
                   {/* Verdict card */}
                   <div style={{ background: "rgba(52,211,153,0.06)", border: "1px solid rgba(52,211,153,0.2)", borderRadius: 12, padding: "16px 20px" }}>
@@ -177,19 +177,19 @@ export default function Home() {
         <section className="relative z-10 px-12 py-24 max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 style={{ fontSize: 36, fontWeight: 800, color: "#f1f5f9", letterSpacing: "-0.025em", marginBottom: 12 }}>
-              Everything you need to win on Etsy POD
+              Everything you need to win online
             </h2>
             <p style={{ fontSize: 16, color: "#475569" }}>One tool. Clear decisions. More sales.</p>
           </div>
 
           <div className="grid grid-cols-3 gap-6">
             {[
-              { emoji: "🎯", title: "POD Verdict", desc: "Get a clear decision for every niche — Great Opportunity, Possible, or Avoid. No more guessing." },
-              { emoji: "📊", title: "Competition Analyzer", desc: "See exactly how hard a niche is to rank in, with strategy tips tailored to POD sellers." },
-              { emoji: "📈", title: "Trend Analyzer", desc: "Know exactly when to upload designs for maximum seasonal sales. 12-month data." },
-              { emoji: "🏷️", title: "Tag Generator", desc: "Generate 13 optimized Etsy tags ranked by search volume and competition score." },
-              { emoji: "🎨", title: "POD Research Hub", desc: "Upload calendar, niche combinator, profit calculator — everything in one place." },
-              { emoji: "⭐", title: "Listing Optimizer", desc: "Auto-generate SEO-optimized titles, descriptions and tags for your Etsy listings." },
+              { emoji: "🎯", title: "Market Verdict", desc: "Get a clear decision for every niche — Great Opportunity, Possible, or Avoid. No more guessing." },
+              { emoji: "📊", title: "Competition Analyzer", desc: "See exactly how hard a niche is to rank in, with strategy tips tailored to online sellers." },
+              { emoji: "📈", title: "Trend Analyzer", desc: "Know exactly when to launch products for maximum seasonal sales. 12-month data." },
+              { emoji: "🏷️", title: "Tag Generator", desc: "Generate optimized tags ranked by search volume and competition score." },
+              { emoji: "🎨", title: "Research Hub", desc: "Upload calendar, niche combinator, profit calculator — everything in one place." },
+              { emoji: "⭐", title: "Listing Optimizer", desc: "Auto-generate SEO-optimized titles, descriptions and tags for your listings." },
             ].map((f, i) => (
               <div key={i} style={{ background: "#111827", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, padding: "24px 28px", transition: "border-color 0.15s" }}
                 className="hover:border-indigo-500/30">
@@ -201,11 +201,11 @@ export default function Home() {
           </div>
         </section>
 
-        {/* POD Platforms */}
+        {/* Platforms */}
         <section className="relative z-10 text-center px-12 py-16" style={{ borderTop: "1px solid rgba(255,255,255,0.06)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-          <p style={{ fontSize: 13, color: "#334155", marginBottom: 16, fontWeight: 500, letterSpacing: "0.08em", textTransform: "uppercase" }}>Works for all POD platforms</p>
+          <p style={{ fontSize: 13, color: "#334155", marginBottom: 16, fontWeight: 500, letterSpacing: "0.08em", textTransform: "uppercase" }}>Works for all platforms</p>
           <div className="flex flex-wrap justify-center gap-3">
-            {["Etsy", "Redbubble", "Merch by Amazon", "Teepublic", "Printify", "Printful", "Gelato", "Shopify"].map(p => (
+            {["Etsy", "Redbubble", "Merch by Amazon", "Teepublic", "Printify", "Printful", "Gelato", "Shopify", "Dropshipping", "Amazon FBA"].map(p => (
               <span key={p} style={{ padding: "6px 16px", borderRadius: 20, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", fontSize: 13, color: "#475569" }}>
                 {p}
               </span>
@@ -219,7 +219,7 @@ export default function Home() {
             Ready to stop guessing and start selling?
           </h2>
           <p style={{ fontSize: 16, color: "#475569", marginBottom: 36, maxWidth: 440 }}>
-            Join 12,400+ POD sellers who make data-driven decisions with Rankify.
+            Join 12,400+ sellers who make data-driven decisions with Markearn.
           </p>
           <Link href="/sign-up"
             style={{ background: "#6366f1", color: "#fff", fontSize: 16, fontWeight: 700, padding: "16px 40px", borderRadius: 14, textDecoration: "none", boxShadow: "0 8px 32px rgba(99,102,241,0.35)", transition: "all 0.15s" }}
@@ -232,13 +232,13 @@ export default function Home() {
         {/* Footer */}
         <footer className="relative z-10 flex items-center justify-between px-12 py-6" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
           <div style={{ fontSize: 15, fontWeight: 700, color: "#f8fafc", letterSpacing: "-0.03em" }}>
-            Rank<span style={{ color: "#818cf8" }}>ify</span>
+            Mark<span style={{ color: "#818cf8" }}>earn</span>
           </div>
           <div className="flex gap-8">
             <Link href="/pricing" style={{ fontSize: 13, color: "#334155", textDecoration: "none" }} className="hover:text-white transition-colors">Pricing</Link>
-            <a href="mailto:yasserelkachabi@gmail.com" style={{ fontSize: 13, color: "#334155", textDecoration: "none" }} className="hover:text-white transition-colors">Contact</a>
+            <a href="mailto:support@markearn.com" style={{ fontSize: 13, color: "#334155", textDecoration: "none" }} className="hover:text-white transition-colors">Contact</a>
           </div>
-          <p style={{ fontSize: 12, color: "#1e293b" }}>© 2026 Rankify. All rights reserved.</p>
+          <p style={{ fontSize: 12, color: "#1e293b" }}>© 2026 Markearn. All rights reserved.</p>
         </footer>
       </div>
     </main>
