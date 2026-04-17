@@ -151,7 +151,7 @@ export default function PODPage() {
 
       <div className="rk">
         <aside className="rk-side">
-          <div className="rk-logo">Rank<em>ify</em></div>
+          <div className="rk-logo">Mark<em>earn</em></div>
           <div className="rk-live-row"><div className="rk-dot" /><span className="rk-live-label">Live data</span></div>
           <div className="rk-section-label">Tools</div>
           <nav className="rk-nav">
