@@ -212,7 +212,7 @@ export default function Dashboard() {
               <div className="rk-dot" style={{ background: "#fbbf24" }} />
               <span style={{ fontSize: 12, color: "#475569" }}>{LIVE[liveIdx]}</span>
             </div>
-            <span style={{ fontSize: 12, color: "#334155" }}>Rankify · Real-time POD decisions</span>
+            <span style={{ fontSize: 12, color: "#334155" }}>Markearn · Real-time market decisions</span>
           </div>
 
           <div className="rk-content">
