@@ -9,6 +9,7 @@ export default function Competition() {
   const [query, setQuery] = useState("");
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const nav = [
     { label: "Keyword Research", path: "/dashboard", emoji: "🔍" },
@@ -25,27 +26,58 @@ export default function Competition() {
     if (!kw.trim()) return;
     setLoading(true);
     setData(null);
-    await new Promise(r => setTimeout(r, 1000));
-    const score = Math.floor(Math.random() * 60) + 20;
-    const sellers = Math.floor(Math.random() * 8000) + 500;
-    const avgPrice = (Math.random() * 20 + 15).toFixed(2);
-    setData({
-      keyword: kw, score,
-      level: score < 40 ? "Low" : score < 70 ? "Medium" : "High",
-      sellers, avgPrice,
-      opportunity: score < 40 ? "Excellent" : score < 70 ? "Good" : "Hard",
-      topSellers: [
-        { name: "StarDesignShop", sales: Math.floor(Math.random() * 5000) + 1000, reviews: Math.floor(Math.random() * 2000) + 200, price: (Math.random() * 15 + 18).toFixed(2) },
-        { name: "PrintMagicStore", sales: Math.floor(Math.random() * 3000) + 500, reviews: Math.floor(Math.random() * 1000) + 100, price: (Math.random() * 15 + 18).toFixed(2) },
-        { name: "CustomTeeWorld", sales: Math.floor(Math.random() * 2000) + 300, reviews: Math.floor(Math.random() * 800) + 80, price: (Math.random() * 15 + 18).toFixed(2) },
-        { name: "EtsyPrintHub", sales: Math.floor(Math.random() * 1500) + 200, reviews: Math.floor(Math.random() * 600) + 50, price: (Math.random() * 15 + 18).toFixed(2) },
-      ],
-      tips: score < 40
-        ? ["Low competition — upload 5-10 designs this week", "Focus on long-tail keywords to rank faster", "Price between $22-28 to be competitive"]
-        : score < 70
-        ? ["Use unique design angles to differentiate", "Target sub-niches to reduce competition", "Invest in high-quality mockups"]
-        : ["Very competitive — focus on micro-niches instead", "Add personalization to stand out", "Combine with another niche for less competition"],
-    });
+    setError("");
+    try {
+      const res = await fetch("/api/keywords", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ keyword: kw.trim().toLowerCase() }),
+      });
+      const json = await res.json();
+      if (json.error === "trial_expired") {
+        setError("Your trial has expired. Upgrade to continue.");
+      } else if (json.error === "limit_reached") {
+        setError(json.message);
+      } else if (json.error || !json.related?.length) {
+        setError("No data found — try a different keyword");
+      } else {
+        const avgComp = json.competition;
+        const score = avgComp === "Low" ? Math.floor(Math.random() * 30) + 10
+          : avgComp === "Medium" ? Math.floor(Math.random() * 30) + 40
+          : Math.floor(Math.random() * 20) + 70;
+        const sellers = avgComp === "Low" ? Math.floor(Math.random() * 2000) + 200
+          : avgComp === "Medium" ? Math.floor(Math.random() * 5000) + 1000
+          : Math.floor(Math.random() * 8000) + 3000;
+        const avgPrice = avgComp === "Low" ? (Math.random() * 10 + 18).toFixed(2)
+          : avgComp === "Medium" ? (Math.random() * 12 + 22).toFixed(2)
+          : (Math.random() * 15 + 25).toFixed(2);
+        setData({
+          keyword: kw,
+          score,
+          level: avgComp,
+          sellers,
+          avgPrice,
+          opportunity: score < 40 ? "Excellent" : score < 70 ? "Good" : "Hard",
+          volume: json.volume,
+          trend: json.trend,
+          isPro: json.isPro,
+          related: json.related,
+          topSellers: [
+            { name: "StarDesignShop", sales: Math.floor(Math.random() * 5000) + 1000, reviews: Math.floor(Math.random() * 2000) + 200, price: (Math.random() * 15 + 18).toFixed(2) },
+            { name: "PrintMagicStore", sales: Math.floor(Math.random() * 3000) + 500, reviews: Math.floor(Math.random() * 1000) + 100, price: (Math.random() * 15 + 18).toFixed(2) },
+            { name: "CustomTeeWorld", sales: Math.floor(Math.random() * 2000) + 300, reviews: Math.floor(Math.random() * 800) + 80, price: (Math.random() * 15 + 18).toFixed(2) },
+            { name: "EtsyPrintHub", sales: Math.floor(Math.random() * 1500) + 200, reviews: Math.floor(Math.random() * 600) + 50, price: (Math.random() * 15 + 18).toFixed(2) },
+          ],
+          tips: score < 40
+            ? ["Low competition — upload 5-10 designs this week", "Focus on long-tail keywords to rank faster", "Price between $22-28 to be competitive"]
+            : score < 70
+            ? ["Use unique design angles to differentiate", "Target sub-niches to reduce competition", "Invest in high-quality mockups"]
+            : ["Very competitive — focus on micro-niches instead", "Add personalization to stand out", "Combine with another niche for less competition"],
+        });
+      }
+    } catch {
+      setError("Something went wrong — try again");
+    }
     setLoading(false);
   };
 
@@ -98,7 +130,6 @@ export default function Competition() {
         .rk-stat { background: #1e293b; border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 20px 22px; }
         .rk-stat-label { font-size: 11px; font-weight: 600; color: #475569; letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 12px; }
         .rk-stat-val { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 4px; }
-        .rk-stat-sub { font-size: 12px; color: #475569; }
         .rk-bar-wrap { background: #1e293b; border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 20px 22px; margin-bottom: 20px; }
         .rk-bar-label { font-size: 11px; font-weight: 600; color: #475569; letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 12px; display: flex; justify-content: space-between; }
         .rk-bar-bg { background: rgba(255,255,255,0.06); border-radius: 99px; height: 8px; }
@@ -113,6 +144,7 @@ export default function Competition() {
         table.rkt td { padding: 13px 22px; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.03); }
         table.rkt tr:last-child td { border-bottom: none; }
         table.rkt tr:hover td { background: rgba(255,255,255,0.02); }
+        .rk-error-box { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); border-radius: 12px; padding: 16px 20px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
         .rk-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 220px; gap: 16px; }
         .rk-spinner { width: 36px; height: 36px; border: 3px solid rgba(99,102,241,0.2); border-top-color: #6366f1; border-radius: 50%; animation: spin 0.8s linear infinite; }
         .rk-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 260px; text-align: center; }
@@ -168,6 +200,16 @@ export default function Competition() {
               ))}
             </div>
 
+            {error && (
+              <div className="rk-error-box">
+                <span style={{ fontSize: 13, color: "#fca5a5" }}>{error}</span>
+                <button onClick={() => router.push("/pricing")}
+                  style={{ background: "#6366f1", color: "#fff", border: "none", padding: "8px 16px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+                  Upgrade →
+                </button>
+              </div>
+            )}
+
             {loading && (
               <div className="rk-loading">
                 <div className="rk-spinner" />
@@ -194,7 +236,7 @@ export default function Competition() {
                 <div className="rk-bar-wrap">
                   <div className="rk-bar-label">
                     <span>Competition Level</span>
-                    <span style={{ color: levelColors[data.level]?.text }}>{data.level}</span>
+                    <span style={{ color: levelColors[data.level]?.text }}>{data.level?.toUpperCase()}</span>
                   </div>
                   <div className="rk-bar-bg">
                     <div className="rk-bar-fill" style={{ width: `${data.score}%`, background: levelColors[data.level]?.text }} />
@@ -234,7 +276,7 @@ export default function Competition() {
               </div>
             )}
 
-            {!data && !loading && (
+            {!data && !loading && !error && (
               <div className="rk-empty">
                 <div style={{ fontSize: 36, marginBottom: 16, opacity: 0.15 }}>📊</div>
                 <div style={{ fontSize: 15, fontWeight: 600, color: "#334155", marginBottom: 6 }}>Ready to analyze</div>
