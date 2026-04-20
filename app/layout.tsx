@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Rankify — #1 Research Tool for POD Sellers",
-  description: "Find winning products, optimize your listings and rank higher on Redbubble, Teepublic, Merch by Amazon and more.",
+  title: "Markearn — Market Research for Online Sellers",
+  description: "Stop selling blind. Markearn analyzes real market data and tells you exactly what to sell and what to avoid. For Etsy, Shopify, POD, and ecommerce sellers.",
 };
 
 export default function RootLayout({
