@@ -7,7 +7,7 @@ const plans = [
     period: "/month",
     searches: "100 searches/month",
     highlight: false,
-    link: "https://rankifytools.lemonsqueezy.com/checkout/buy/c6882729-f43c-4455-a9be-f9df7199b648",
+    link: "https://markearn.lemonsqueezy.com/checkout/buy/c6882729-f43c-4455-a9be-f9df7199b648",
     features: [
       "100 searches/month",
       "POD Decision tool",
@@ -24,7 +24,7 @@ const plans = [
     period: "/month",
     searches: "500 searches/month",
     highlight: true,
-    link: "https://rankifytools.lemonsqueezy.com/checkout/buy/2f0e0ecc-963d-4241-8105-9571bc559365",
+    link: "https://markearn.lemonsqueezy.com/checkout/buy/2f0e0ecc-963d-4241-8105-9571bc559365",
     features: [
       "500 searches/month",
       "Everything in Starter",
@@ -42,7 +42,7 @@ const plans = [
     period: "/month",
     searches: "Unlimited searches",
     highlight: false,
-    link: "https://rankifytools.lemonsqueezy.com/checkout/buy/4828262b-b483-400c-8a2c-797870523490",
+    link: "https://markearn.lemonsqueezy.com/checkout/buy/4828262b-b483-400c-8a2c-797870523490",
     features: [
       "Unlimited searches",
       "Everything in Pro",
@@ -70,7 +70,7 @@ export default function Pricing() {
         <nav className="relative z-10 flex items-center justify-between px-12 py-5 border-b border-white/[0.06]"
           style={{ background: "rgba(15,22,35,0.8)", backdropFilter: "blur(12px)" }}>
           <Link href="/" style={{ fontSize: 18, fontWeight: 700, color: "#f8fafc", letterSpacing: "-0.03em", textDecoration: "none" }}>
-            Rank<span style={{ color: "#818cf8" }}>ify</span>
+            Mark<span style={{ color: "#818cf8" }}>earn</span>
           </Link>
           <Link href="/sign-up"
             style={{ background: "#6366f1", color: "#fff", fontSize: 14, fontWeight: 600, padding: "10px 20px", borderRadius: 10, textDecoration: "none" }}>
@@ -146,7 +146,7 @@ export default function Pricing() {
           <div className="mt-12">
             <p style={{ fontSize: 13, color: "#334155" }}>
               Questions? Contact us at{" "}
-              <a href="mailto:yasserelkachabi@gmail.com" style={{ color: "#6366f1" }}>yasserelkachabi@gmail.com</a>
+              <a href="mailto:support@markearn.com" style={{ color: "#6366f1" }}>support@markearn.com</a>
             </p>
           </div>
         </section>
