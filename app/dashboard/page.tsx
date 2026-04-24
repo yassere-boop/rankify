@@ -4,6 +4,65 @@ import { useRouter } from "next/navigation";
 
 const LIVE = ["2,847 sellers online now", "143 searches this minute", "89 listings optimized today", "1,204 tags generated today"];
 
+// ============================================
+// DYNAMIC SUGGESTIONS - Changes by season
+// ============================================
+function getDynamicChips(): string[] {
+  const month = new Date().getMonth() + 1;
+  const seasonal: Record<number, string[]> = {
+    1: ["valentines day", "winter cozy", "new year goals"],
+    2: ["valentines gift", "galentines", "spring prep"],
+    3: ["st patricks day", "spring vibes", "easter mom"],
+    4: ["mothers day mug", "spring break", "easter hunt"],
+    5: ["mothers day gift", "graduation 2026", "teacher gift"],
+    6: ["fathers day", "summer vibes", "pride month"],
+    7: ["4th of july", "summer beach", "patriotic"],
+    8: ["back to school", "teacher gift", "halloween prep"],
+    9: ["fall vibes", "pumpkin spice", "halloween"],
+    10: ["halloween shirt", "spooky season", "fall aesthetic"],
+    11: ["thanksgiving", "black friday", "cozy season"],
+    12: ["christmas gift", "holiday mug", "stocking stuffer"]
+  };
+  const trending = ["matcha lover", "stay at home dad", "boy mom era", "plant mom", "gen z humor"];
+  const week = Math.floor(new Date().getDate() / 7);
+  return [...(seasonal[month] || []), trending[week % 5], trending[(week + 1) % 5]].slice(0, 8);
+}
+
+// ============================================
+// SCORE CALCULATOR
+// ============================================
+function calculateScore(volume: string, competition: string, trend: string): number {
+  const vol = parseInt(volume?.replace(/[^0-9]/g, "") || "0");
+  let score = 50;
+  if (vol > 10000) score += 20;
+  else if (vol > 5000) score += 15;
+  else if (vol > 1000) score += 10;
+  else if (vol > 500) score += 5;
+  else score -= 10;
+  
+  if (competition === "Low") score += 25;
+  else if (competition === "Medium") score += 5;
+  else score -= 25;
+  
+  if (trend?.startsWith("↑")) score += 10;
+  else if (trend?.startsWith("↓")) score -= 15;
+  
+  return Math.max(5, Math.min(95, score));
+}
+
+// ============================================
+// ALTERNATIVES GENERATOR
+// ============================================
+function generateAlternatives(niche: string) {
+  const base = niche.toLowerCase().split(" ")[0];
+  return [
+    { name: `${niche} for nurses`, reason: "Profession-specific = 70% less comp" },
+    { name: `vintage ${base}`, reason: "Vintage twist = different buyer pool" },
+    { name: `${base} aesthetic 2026`, reason: "Trendy keyword + low comp" },
+    { name: `personalized ${base}`, reason: "Custom = 30% higher prices" },
+  ];
+}
+
 function getPODVerdict(volume: string, competition: string, trend: string, keyword: string) {
   const vol = parseInt(volume?.replace(/[^0-9]/g, "") || "0");
   const isGeneric = ["candle", "mug", "shirt", "hoodie", "tshirt", "poster"].includes(keyword.toLowerCase().trim());
@@ -18,6 +77,7 @@ function getPODVerdict(volume: string, competition: string, trend: string, keywo
       warning: null,
       reasons: ["Keyword too generic — impossible to differentiate", "Extreme saturation — thousands of similar designs already", "Margins crushed by competition"],
       design: [], avoid: ["Designs without a specific angle", "Generic text without humor or niche", "Copying existing bestsellers"],
+      showAlternatives: true,
     };
   }
   if (!hasVolume) {
@@ -28,6 +88,7 @@ function getPODVerdict(volume: string, competition: string, trend: string, keywo
       reasons: ["Low demand — niche market only", "Little competition — easy to rank if well targeted", "Works well with strong personalization"],
       design: [`${keyword} with humor or unique quote`, `Personalized with name or date`, `Combined with another niche (e.g. ${keyword} + nurse)`],
       avoid: ["Designs without personalization", "Waiting for high volume that won't come"],
+      showAlternatives: false,
     };
   }
   if (isHighComp && !isRising) {
@@ -38,6 +99,7 @@ function getPODVerdict(volume: string, competition: string, trend: string, keywo
       reasons: ["Good demand but high saturation", "Profitable only with a very specific angle", "Personalization is your only weapon here"],
       design: [`Micro-niche: ${keyword} + profession/breed/region`, `Humor specific to the community`, `Premium minimalist designs`],
       avoid: ["Generic designs on this keyword", "Pricing too low against big sellers", "No personalization"],
+      showAlternatives: true,
     };
   }
   return {
@@ -56,6 +118,7 @@ function getPODVerdict(volume: string, competition: string, trend: string, keywo
       `${keyword} + secondary profession or hobby`,
     ],
     avoid: ["Too generic designs", "Copying bestsellers without a unique angle"],
+    showAlternatives: false,
   };
 }
 
@@ -75,20 +138,22 @@ export default function Dashboard() {
     return () => clearInterval(t);
   }, []);
 
-  async function handleAnalyze() {
-    if (!query.trim()) return;
+  async function handleAnalyze(kw?: string) {
+    const q = (kw || query).trim();
+    if (!q) return;
+    setQuery(q);
     setLoading(true); setNoResult(false); setResult(null); setLimitError(""); setShowData(false);
     try {
       const res = await fetch("/api/keywords", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ keyword: query.trim().toLowerCase() }),
+        body: JSON.stringify({ keyword: q.toLowerCase() }),
       });
       const data = await res.json();
       if (data.error === "trial_expired") setLimitError("Your trial has expired. Upgrade to continue.");
       else if (data.error === "limit_reached") setLimitError(data.message);
       else if (data.error || !data.related?.length) setNoResult(true);
-      else { setResult(data); setSearched(query); }
+      else { setResult(data); setSearched(q); }
     } catch { setNoResult(true); }
     setLoading(false);
   }
@@ -103,14 +168,16 @@ export default function Dashboard() {
     { label: "POD Research", path: "/pod", emoji: "🎨", badge: "NEW" },
   ];
 
-  const chips = ["dog mom", "nurse gift", "teacher gift", "halloween witch", "cat lover", "birthday queen", "vintage retro", "funny dad"];
+  const chips = getDynamicChips();
   const verdict = result ? getPODVerdict(result.volume, result.competition, result.trend, searched) : null;
+  const score = result ? calculateScore(result.volume, result.competition, result.trend) : 0;
+  const alternatives = verdict?.showAlternatives ? generateAlternatives(searched) : [];
   const isPro = result?.isPro || false;
 
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         .rk { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: #0f1623; color: #cbd5e1; min-height: 100vh; display: flex; }
         .rk-side { width: 228px; background: #111827; border-right: 1px solid rgba(255,255,255,0.07); display: flex; flex-direction: column; flex-shrink: 0; padding: 24px 14px 20px; }
         .rk-logo { font-size: 18px; font-weight: 700; color: #f8fafc; letter-spacing: -0.03em; padding: 0 6px; margin-bottom: 8px; }
@@ -143,7 +210,8 @@ export default function Dashboard() {
         .rk-chips { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 36px; }
         .rk-chip { padding: 6px 14px; border-radius: 20px; background: #1e293b; border: 1px solid rgba(255,255,255,0.07); color: #475569; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.12s; font-family: inherit; }
         .rk-chip:hover { background: rgba(99,102,241,0.1); border-color: rgba(99,102,241,0.3); color: #a5b4fc; }
-        .rk-verdict { border-radius: 16px; padding: 24px 28px; margin-bottom: 20px; }
+        .rk-verdict { border-radius: 16px; padding: 24px 28px; margin-bottom: 20px; display: flex; gap: 24px; align-items: stretch; }
+        .rk-verdict-left { flex: 1; }
         .rk-verdict-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
         .rk-verdict-emoji { font-size: 28px; }
         .rk-verdict-title { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
@@ -152,9 +220,20 @@ export default function Dashboard() {
         .rk-verdict-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
         .rk-verdict-proof { font-size: 11px; color: rgba(255,255,255,0.25); font-style: italic; margin-bottom: 16px; }
         .rk-verdict-warning { font-size: 12px; font-weight: 700; color: #fbbf24; margin-bottom: 16px; padding: 8px 12px; background: rgba(251,191,36,0.08); border-radius: 8px; }
+        .rk-verdict-score { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px 24px; border-left: 1px solid rgba(255,255,255,0.08); min-width: 140px; }
+        .rk-verdict-score-num { font-size: 56px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; }
+        .rk-verdict-score-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-top: 6px; opacity: 0.6; }
         .rk-design-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
         .rk-design-card { background: rgba(255,255,255,0.04); border-radius: 10px; padding: 12px 14px; font-size: 12px; color: #94a3b8; line-height: 1.5; border: 1px solid rgba(255,255,255,0.05); }
         .rk-design-label { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
+        .rk-alts { background: rgba(129,140,248,0.06); border: 1px solid rgba(129,140,248,0.2); border-radius: 14px; padding: 20px 24px; margin-bottom: 20px; }
+        .rk-alts-title { font-size: 11px; font-weight: 700; color: #a5b4fc; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px; }
+        .rk-alts-sub { font-size: 12px; color: #64748b; margin-bottom: 14px; }
+        .rk-alts-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        .rk-alt-item { background: rgba(15,22,35,0.6); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; padding: 12px 14px; cursor: pointer; transition: all 0.15s; }
+        .rk-alt-item:hover { background: rgba(99,102,241,0.1); border-color: rgba(99,102,241,0.3); transform: translateY(-1px); }
+        .rk-alt-name { font-size: 13px; font-weight: 600; color: #e2e8f0; margin-bottom: 3px; }
+        .rk-alt-reason { font-size: 11px; color: #64748b; }
         .rk-data-toggle { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; color: #475569; background: none; border: none; font-family: inherit; padding: 0; margin-bottom: 20px; transition: color 0.15s; }
         .rk-data-toggle:hover { color: #94a3b8; }
         .rk-stats { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 14px; margin-bottom: 20px; }
@@ -181,6 +260,11 @@ export default function Dashboard() {
         @keyframes rkfade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
         @keyframes dpulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
         @keyframes spin { to{transform:rotate(360deg)} }
+        @media (max-width: 768px) {
+          .rk-verdict { flex-direction: column; }
+          .rk-verdict-score { border-left: none; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px; }
+          .rk-alts-grid { grid-template-columns: 1fr; }
+        }
       `}</style>
 
       <div className="rk">
@@ -224,8 +308,8 @@ export default function Dashboard() {
               <input className="rk-input" value={query}
                 onChange={e => setQuery(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && handleAnalyze()}
-                placeholder='Enter a niche — "dog mom", "nurse gift", "halloween witch"...' />
-              <button className="rk-btn" onClick={handleAnalyze} disabled={loading}>
+                placeholder='Enter a niche — "matcha lover", "halloween cat", "boy mom era"...' />
+              <button className="rk-btn" onClick={() => handleAnalyze()} disabled={loading}>
                 {loading ? "Analyzing..." : "Analyze →"}
               </button>
             </div>
@@ -233,7 +317,7 @@ export default function Dashboard() {
             {!result && !limitError && (
               <div className="rk-chips">
                 {chips.map(c => (
-                  <button key={c} className="rk-chip" onClick={() => setQuery(c)}>{c}</button>
+                  <button key={c} className="rk-chip" onClick={() => handleAnalyze(c)}>{c}</button>
                 ))}
               </div>
             )}
@@ -283,92 +367,114 @@ export default function Dashboard() {
                 </div>
 
                 <div className="rk-verdict" style={{ background: verdict.bg, border: `1px solid ${verdict.border}` }}>
-                  <div className="rk-verdict-header">
-                    <span className="rk-verdict-emoji">{verdict.emoji}</span>
-                    <div>
-                      <div style={{ fontSize: 11, fontWeight: 600, color: verdict.color, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 4 }}>POD Verdict</div>
-                      <div className="rk-verdict-title" style={{ color: verdict.color }}>{verdict.verdict}</div>
-                    </div>
-                  </div>
-
-                  <div className="rk-verdict-reasons">
-                    {verdict.reasons.map((r: string, i: number) => (
-                      <div key={i} className="rk-verdict-reason">
-                        <div className="rk-verdict-dot" style={{ background: verdict.color }} />
-                        {r}
+                  <div className="rk-verdict-left">
+                    <div className="rk-verdict-header">
+                      <span className="rk-verdict-emoji">{verdict.emoji}</span>
+                      <div>
+                        <div style={{ fontSize: 11, fontWeight: 600, color: verdict.color, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 4 }}>POD Verdict</div>
+                        <div className="rk-verdict-title" style={{ color: verdict.color }}>{verdict.verdict}</div>
                       </div>
-                    ))}
-                  </div>
-
-                  <div className="rk-verdict-proof">
-                    Verdict based on real market demand & competition data.
-                  </div>
-
-                  {verdict.warning && (
-                    <div className="rk-verdict-warning">
-                      ⚠️ {verdict.warning}
                     </div>
-                  )}
 
-                  {verdict.design.length > 0 && (
-                    isPro ? (
-                      <div className="rk-design-grid">
-                        <div>
-                          <div className="rk-design-label" style={{ color: verdict.color }}>✏️ What to design</div>
-                          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                            {verdict.design.map((d: string, i: number) => (
-                              <div key={i} className="rk-design-card">→ {d}</div>
-                            ))}
-                          </div>
+                    <div className="rk-verdict-reasons">
+                      {verdict.reasons.map((r: string, i: number) => (
+                        <div key={i} className="rk-verdict-reason">
+                          <div className="rk-verdict-dot" style={{ background: verdict.color }} />
+                          {r}
                         </div>
-                        <div>
-                          <div className="rk-design-label" style={{ color: "#f87171" }}>🚫 What to avoid</div>
-                          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                            {verdict.avoid.map((d: string, i: number) => (
-                              <div key={i} className="rk-design-card">✕ {d}</div>
-                            ))}
-                          </div>
-                        </div>
+                      ))}
+                    </div>
+
+                    <div className="rk-verdict-proof">
+                      Verdict based on real market demand & competition data.
+                    </div>
+
+                    {verdict.warning && (
+                      <div className="rk-verdict-warning">
+                        ⚠️ {verdict.warning}
                       </div>
-                    ) : (
-                      <div className="rk-paywall">
-                        <div className="rk-paywall-blur">
-                          <div className="rk-design-grid">
-                            <div>
-                              <div className="rk-design-label" style={{ color: verdict.color }}>✏️ What to design</div>
-                              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                                {["dog mom + breed specific", "Funny quotes + personalized", "dog mom + holiday event"].map((d, i) => (
-                                  <div key={i} className="rk-design-card">→ {d}</div>
-                                ))}
-                              </div>
+                    )}
+
+                    {verdict.design.length > 0 && (
+                      isPro ? (
+                        <div className="rk-design-grid">
+                          <div>
+                            <div className="rk-design-label" style={{ color: verdict.color }}>✏️ What to design</div>
+                            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                              {verdict.design.map((d: string, i: number) => (
+                                <div key={i} className="rk-design-card">→ {d}</div>
+                              ))}
                             </div>
-                            <div>
-                              <div className="rk-design-label" style={{ color: "#f87171" }}>🚫 What to avoid</div>
-                              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                                {["Generic designs", "No personalization", "Copying bestsellers"].map((d, i) => (
-                                  <div key={i} className="rk-design-card">✕ {d}</div>
-                                ))}
-                              </div>
+                          </div>
+                          <div>
+                            <div className="rk-design-label" style={{ color: "#f87171" }}>🚫 What to avoid</div>
+                            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                              {verdict.avoid.map((d: string, i: number) => (
+                                <div key={i} className="rk-design-card">✕ {d}</div>
+                              ))}
                             </div>
                           </div>
                         </div>
-                        <div className="rk-paywall-overlay">
-                          <div style={{ fontSize: 13, fontWeight: 700, color: "#f1f5f9" }}>🔒 Pro Feature</div>
-                          <div style={{ fontSize: 11, color: "#475569", textAlign: "center", maxWidth: 260 }}>
-                            Unlock "What to design" & "What to avoid"
+                      ) : (
+                        <div className="rk-paywall">
+                          <div className="rk-paywall-blur">
+                            <div className="rk-design-grid">
+                              <div>
+                                <div className="rk-design-label" style={{ color: verdict.color }}>✏️ What to design</div>
+                                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                                  {["dog mom + breed specific", "Funny quotes + personalized", "dog mom + holiday event"].map((d, i) => (
+                                    <div key={i} className="rk-design-card">→ {d}</div>
+                                  ))}
+                                </div>
+                              </div>
+                              <div>
+                                <div className="rk-design-label" style={{ color: "#f87171" }}>🚫 What to avoid</div>
+                                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                                  {["Generic designs", "No personalization", "Copying bestsellers"].map((d, i) => (
+                                    <div key={i} className="rk-design-card">✕ {d}</div>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
                           </div>
-                          <div style={{ fontSize: 10, color: "#6366f1", textAlign: "center", maxWidth: 260, fontStyle: "italic" }}>
-                            POD Verdict confirmed — unlock exact design guidance.
+                          <div className="rk-paywall-overlay">
+                            <div style={{ fontSize: 13, fontWeight: 700, color: "#f1f5f9" }}>🔒 Pro Feature</div>
+                            <div style={{ fontSize: 11, color: "#475569", textAlign: "center", maxWidth: 260 }}>
+                              Unlock "What to design" & "What to avoid"
+                            </div>
+                            <div style={{ fontSize: 10, color: "#6366f1", textAlign: "center", maxWidth: 260, fontStyle: "italic" }}>
+                              POD Verdict confirmed — unlock exact design guidance.
+                            </div>
+                            <button onClick={() => router.push("/pricing")}
+                              style={{ background: "#6366f1", color: "#fff", border: "none", padding: "8px 20px", borderRadius: 10, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", marginTop: 4 }}>
+                              Upgrade to Pro — $39/mo →
+                            </button>
                           </div>
-                          <button onClick={() => router.push("/pricing")}
-                            style={{ background: "#6366f1", color: "#fff", border: "none", padding: "8px 20px", borderRadius: 10, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", marginTop: 4 }}>
-                            Upgrade to Pro — $39/mo →
-                          </button>
                         </div>
-                      </div>
-                    )
-                  )}
+                      )
+                    )}
+                  </div>
+
+                  <div className="rk-verdict-score">
+                    <div className="rk-verdict-score-num" style={{ color: verdict.color }}>{score}</div>
+                    <div className="rk-verdict-score-label" style={{ color: verdict.color }}>POD Score / 100</div>
+                  </div>
                 </div>
+
+                {alternatives.length > 0 && (
+                  <div className="rk-alts">
+                    <div className="rk-alts-title">🎯 Better Alternatives</div>
+                    <div className="rk-alts-sub">This niche is saturated — try these less competitive variants:</div>
+                    <div className="rk-alts-grid">
+                      {alternatives.map((alt, i) => (
+                        <div key={i} className="rk-alt-item" onClick={() => handleAnalyze(alt.name)}>
+                          <div className="rk-alt-name">→ {alt.name}</div>
+                          <div className="rk-alt-reason">{alt.reason}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 <button className="rk-data-toggle" onClick={() => setShowData(!showData)}>
                   <span style={{ fontSize: 16 }}>{showData ? "▾" : "▸"}</span>
