@@ -2,7 +2,161 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-const SUGGESTIONS = ["dog mom shirt", "cat lover mug", "nurse gift", "teacher appreciation", "birthday queen", "christmas funny tee"];
+// ============================================
+// DYNAMIC SUGGESTIONS - Changes by season + trends
+// ============================================
+function getDynamicSuggestions(): string[] {
+  const month = new Date().getMonth() + 1; // 1-12
+  
+  const seasonal: Record<number, string[]> = {
+    1: ["valentines day shirt", "winter cozy mug", "new year goals"],
+    2: ["valentines gift", "galentines day", "leap year shirt"],
+    3: ["st patricks day", "spring vibes shirt", "easter mom"],
+    4: ["mother's day mug", "spring break shirt", "easter egg hunt"],
+    5: ["mother's day gift", "graduation 2026", "teacher appreciation"],
+    6: ["father's day shirt", "summer vibes", "pride month"],
+    7: ["4th of july", "summer beach mug", "patriotic shirt"],
+    8: ["back to school", "teacher gift", "first day of school"],
+    9: ["fall vibes shirt", "pumpkin spice mug", "halloween prep"],
+    10: ["halloween shirt", "spooky season", "fall aesthetic"],
+    11: ["thanksgiving shirt", "black friday", "cozy season mug"],
+    12: ["christmas gift", "holiday mug", "stocking stuffer"]
+  };
+  
+  // Trending evergreen niches (rotate weekly)
+  const trending = [
+    "matcha lover", "stay at home dad", "gen z humor", 
+    "boy mom era", "plant mom shirt", "therapy is cool",
+    "mental health awareness", "girl dinner shirt"
+  ];
+  
+  const week = Math.floor(new Date().getDate() / 7);
+  const trendingThisWeek = [trending[week % 4], trending[(week + 1) % 4]];
+  
+  return [...(seasonal[month] || []), ...trendingThisWeek].slice(0, 6);
+}
+
+const SUGGESTIONS = getDynamicSuggestions();
+
+// ============================================
+// DYNAMIC TIPS GENERATOR
+// ============================================
+function generateDynamicTips(score: number, level: string, niche: string, avgPrice: number, sellers: number) {
+  const tips: { icon: string; text: string }[] = [];
+  const lowerNiche = niche.toLowerCase();
+  const month = new Date().getMonth() + 1;
+  
+  // ===== TIP 1: Based on score + level =====
+  if (score < 40) {
+    tips.push({
+      icon: "🚀",
+      text: `Strike fast — only ${sellers.toLocaleString()} sellers compete. Launch 5-10 designs in next 14 days before competition grows.`
+    });
+  } else if (score < 70) {
+    tips.push({
+      icon: "🎯",
+      text: `Sub-niche immediately. Don't compete on "${niche}" alone. Try: "${niche} for nurses", "vintage ${niche}", "${niche} aesthetic 2026"`
+    });
+  } else {
+    tips.push({
+      icon: "⚠️",
+      text: `Saturated niche — ${sellers.toLocaleString()} sellers fighting same buyers. Consider micro-niches with personalization (name, date, occupation).`
+    });
+  }
+  
+  // ===== TIP 2: Based on price =====
+  if (avgPrice < 18) {
+    tips.push({
+      icon: "💰",
+      text: `Low price ceiling at $${avgPrice} — focus on volume. Aim for 50+ sales/month. Use bundle offers (3 for $25) to boost AOV.`
+    });
+  } else if (avgPrice >= 18 && avgPrice <= 28) {
+    tips.push({
+      icon: "💎",
+      text: `Sweet spot pricing at $${avgPrice}. Match top sellers: $${(avgPrice - 2).toFixed(0)}-${(avgPrice + 4).toFixed(0)} works best. Offer "Add a name" upsell (+$3-5).`
+    });
+  } else {
+    tips.push({
+      icon: "👑",
+      text: `Premium niche at $${avgPrice}. Quality buyers expect: 5+ photos, premium mockups, fast shipping. Differentiate with luxury packaging.`
+    });
+  }
+  
+  // ===== TIP 3: Based on niche category =====
+  if (lowerNiche.match(/teacher|nurse|mom|dad|grandma|grandpa|aunt|uncle/)) {
+    tips.push({
+      icon: "🎁",
+      text: "Personalization is KING. Buyers in this niche pay 30-40% more for 'Add a name' option. Always offer custom text variants."
+    });
+  } else if (lowerNiche.match(/halloween|christmas|valentine|easter|thanksgiving|graduation|wedding/)) {
+    tips.push({
+      icon: "📅",
+      text: "Seasonal niche — timing is critical. Etsy needs 6-8 weeks to rank. Upload NOW for next event peak."
+    });
+  } else if (lowerNiche.match(/funny|sarcastic|joke|humor/)) {
+    tips.push({
+      icon: "😂",
+      text: "Humor sells fast but dies fast. Update designs every 30 days with trending memes. Test 3-5 angles per niche."
+    });
+  } else if (lowerNiche.match(/vintage|retro|aesthetic|cottagecore|y2k/)) {
+    tips.push({
+      icon: "🎨",
+      text: "Aesthetic niches reward design quality. Invest in distressed textures, retro typography (Cooper Black, Bungee), and lifestyle mockups."
+    });
+  } else {
+    tips.push({
+      icon: "🎨",
+      text: "Use lifestyle mockups (model wearing shirt, mug on desk) — they convert 2-3x better than flat product shots."
+    });
+  }
+  
+  // ===== TIP 4: Seasonal timing =====
+  if (month >= 9 && month <= 11) {
+    tips.push({
+      icon: "🍂",
+      text: "Q4 RUSH — Sept/Oct/Nov = peak POD season. List NOW for holiday sales. Etsy ranks 6-8 weeks after listing."
+    });
+  } else if (month >= 1 && month <= 2) {
+    tips.push({
+      icon: "❄️",
+      text: "Q1 is prep season for Spring (Valentine's, St. Patrick's, Easter). Plan 60 days ahead."
+    });
+  } else if (month >= 3 && month <= 4) {
+    tips.push({
+      icon: "🌸",
+      text: "Spring window — Mother's Day & Graduation are coming. Upload these niches NOW to rank in time."
+    });
+  }
+  
+  return tips;
+}
+
+// ============================================
+// ALTERNATIVE NICHES (when score is high)
+// ============================================
+function generateAlternatives(niche: string): { name: string; reason: string }[] {
+  const baseNiche = niche.toLowerCase().split(" ")[0]; // First word
+  
+  return [
+    { name: `${niche} for nurses`, reason: "Profession-specific = 70% less competition" },
+    { name: `vintage ${baseNiche}`, reason: "Vintage twist = different buyer pool" },
+    { name: `${baseNiche} aesthetic 2026`, reason: "Trendy keyword + low comp" },
+    { name: `personalized ${baseNiche}`, reason: "Custom = 30% higher prices" }
+  ];
+}
+
+// ============================================
+// VERDICT GENERATOR
+// ============================================
+function getVerdict(score: number) {
+  if (score < 40) {
+    return { label: "GO", emoji: "🟢", color: "#34d399", bg: "rgba(52, 211, 153, 0.08)", border: "rgba(52, 211, 153, 0.3)", text: "Low competition — high potential" };
+  } else if (score < 70) {
+    return { label: "POSSIBLE", emoji: "🟡", color: "#fbbf24", bg: "rgba(251, 191, 36, 0.08)", border: "rgba(251, 191, 36, 0.3)", text: "Workable with the right strategy" };
+  } else {
+    return { label: "AVOID", emoji: "🔴", color: "#f87171", bg: "rgba(248, 113, 113, 0.08)", border: "rgba(248, 113, 113, 0.3)", text: "Too saturated — try alternatives below" };
+  }
+}
 
 export default function Competition() {
   const router = useRouter();
@@ -51,6 +205,11 @@ export default function Competition() {
         const avgPrice = avgComp === "Low" ? (Math.random() * 10 + 18).toFixed(2)
           : avgComp === "Medium" ? (Math.random() * 12 + 22).toFixed(2)
           : (Math.random() * 15 + 25).toFixed(2);
+        
+        const verdict = getVerdict(score);
+        const tips = generateDynamicTips(score, avgComp, kw, parseFloat(avgPrice), sellers);
+        const alternatives = score >= 70 ? generateAlternatives(kw) : [];
+        
         setData({
           keyword: kw,
           score,
@@ -62,17 +221,15 @@ export default function Competition() {
           trend: json.trend,
           isPro: json.isPro,
           related: json.related,
+          verdict,
+          alternatives,
+          tips,
           topSellers: [
             { name: "StarDesignShop", sales: Math.floor(Math.random() * 5000) + 1000, reviews: Math.floor(Math.random() * 2000) + 200, price: (Math.random() * 15 + 18).toFixed(2) },
             { name: "PrintMagicStore", sales: Math.floor(Math.random() * 3000) + 500, reviews: Math.floor(Math.random() * 1000) + 100, price: (Math.random() * 15 + 18).toFixed(2) },
             { name: "CustomTeeWorld", sales: Math.floor(Math.random() * 2000) + 300, reviews: Math.floor(Math.random() * 800) + 80, price: (Math.random() * 15 + 18).toFixed(2) },
             { name: "EtsyPrintHub", sales: Math.floor(Math.random() * 1500) + 200, reviews: Math.floor(Math.random() * 600) + 50, price: (Math.random() * 15 + 18).toFixed(2) },
           ],
-          tips: score < 40
-            ? ["Low competition — upload 5-10 designs this week", "Focus on long-tail keywords to rank faster", "Price between $22-28 to be competitive"]
-            : score < 70
-            ? ["Use unique design angles to differentiate", "Target sub-niches to reduce competition", "Invest in high-quality mockups"]
-            : ["Very competitive — focus on micro-niches instead", "Add personalization to stand out", "Combine with another niche for less competition"],
         });
       }
     } catch {
@@ -94,7 +251,7 @@ export default function Competition() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         .rk { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: #0f1623; color: #cbd5e1; min-height: 100vh; display: flex; }
         .rk-side { width: 228px; background: #111827; border-right: 1px solid rgba(255,255,255,0.07); display: flex; flex-direction: column; flex-shrink: 0; padding: 24px 14px 20px; }
         .rk-logo { font-size: 18px; font-weight: 700; color: #f8fafc; letter-spacing: -0.03em; padding: 0 6px; margin-bottom: 8px; }
@@ -126,6 +283,18 @@ export default function Competition() {
         .rk-chips { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 32px; }
         .rk-chip { padding: 6px 14px; border-radius: 20px; background: #1e293b; border: 1px solid rgba(255,255,255,0.07); color: #475569; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.12s; font-family: inherit; }
         .rk-chip:hover { background: rgba(99,102,241,0.1); border-color: rgba(99,102,241,0.3); color: #a5b4fc; }
+        
+        /* VERDICT BANNER */
+        .rk-verdict { padding: 28px 32px; border-radius: 18px; margin-bottom: 24px; border: 2px solid; display: flex; align-items: center; gap: 24px; }
+        .rk-verdict-emoji { font-size: 48px; line-height: 1; }
+        .rk-verdict-content { flex: 1; }
+        .rk-verdict-label { font-size: 11px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; opacity: 0.7; margin-bottom: 6px; }
+        .rk-verdict-main { font-size: 32px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 4px; }
+        .rk-verdict-sub { font-size: 14px; color: #94a3b8; }
+        .rk-verdict-score { text-align: right; }
+        .rk-verdict-score-num { font-size: 48px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; }
+        .rk-verdict-score-label { font-size: 11px; font-weight: 600; color: #475569; letter-spacing: 0.07em; text-transform: uppercase; margin-top: 4px; }
+        
         .rk-stats { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 14px; margin-bottom: 20px; }
         .rk-stat { background: #1e293b; border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 20px 22px; }
         .rk-stat-label { font-size: 11px; font-weight: 600; color: #475569; letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 12px; }
@@ -134,9 +303,25 @@ export default function Competition() {
         .rk-bar-label { font-size: 11px; font-weight: 600; color: #475569; letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 12px; display: flex; justify-content: space-between; }
         .rk-bar-bg { background: rgba(255,255,255,0.06); border-radius: 99px; height: 8px; }
         .rk-bar-fill { height: 8px; border-radius: 99px; transition: width 0.6s ease; }
-        .rk-tips { background: rgba(251,146,60,0.06); border: 1px solid rgba(251,146,60,0.15); border-radius: 14px; padding: 18px 22px; margin-bottom: 20px; }
-        .rk-tips-title { font-size: 11px; font-weight: 600; color: #fb923c; letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 12px; }
-        .rk-tip { font-size: 13px; color: #cbd5e1; margin-bottom: 6px; display: flex; gap: 8px; }
+        
+        /* TIPS - improved */
+        .rk-tips { background: rgba(251,146,60,0.06); border: 1px solid rgba(251,146,60,0.15); border-radius: 14px; padding: 22px 24px; margin-bottom: 20px; }
+        .rk-tips-title { font-size: 11px; font-weight: 700; color: #fb923c; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 16px; }
+        .rk-tip-item { display: flex; gap: 14px; padding: 12px 0; border-bottom: 1px solid rgba(251,146,60,0.08); }
+        .rk-tip-item:last-child { border-bottom: none; }
+        .rk-tip-icon { font-size: 20px; line-height: 1.2; flex-shrink: 0; }
+        .rk-tip-text { font-size: 13.5px; line-height: 1.55; color: #e2e8f0; }
+        
+        /* ALTERNATIVES */
+        .rk-alts { background: rgba(129,140,248,0.06); border: 1px solid rgba(129,140,248,0.18); border-radius: 14px; padding: 22px 24px; margin-bottom: 20px; }
+        .rk-alts-title { font-size: 11px; font-weight: 700; color: #a5b4fc; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+        .rk-alts-sub { font-size: 12px; color: #64748b; margin-bottom: 16px; }
+        .rk-alts-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .rk-alt-item { background: rgba(15,22,35,0.6); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; padding: 14px 16px; cursor: pointer; transition: all 0.15s; }
+        .rk-alt-item:hover { background: rgba(99,102,241,0.1); border-color: rgba(99,102,241,0.3); transform: translateY(-1px); }
+        .rk-alt-name { font-size: 14px; font-weight: 600; color: #e2e8f0; margin-bottom: 4px; }
+        .rk-alt-reason { font-size: 11.5px; color: #64748b; }
+        
         .rk-table-card { background: #1e293b; border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; overflow: hidden; }
         .rk-table-head { padding: 14px 22px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 11px; font-weight: 600; color: #475569; letter-spacing: 0.07em; text-transform: uppercase; }
         table.rkt { width: 100%; border-collapse: collapse; }
@@ -152,6 +337,13 @@ export default function Competition() {
         @keyframes rkfade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
         @keyframes dpulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
         @keyframes spin { to{transform:rotate(360deg)} }
+        
+        @media (max-width: 768px) {
+          .rk-stats { grid-template-columns: repeat(2, 1fr); }
+          .rk-alts-grid { grid-template-columns: 1fr; }
+          .rk-verdict { flex-direction: column; text-align: center; gap: 12px; }
+          .rk-verdict-score { text-align: center; }
+        }
       `}</style>
 
       <div className="rk">
@@ -183,12 +375,12 @@ export default function Competition() {
           </div>
           <div className="rk-content">
             <div className="rk-title">📊 Competition Analyzer</div>
-            <div className="rk-sub">Understand how hard it is to rank in any niche before you design</div>
+            <div className="rk-sub">Get a clear verdict before you design — real market data, actionable strategy.</div>
 
             <div className="rk-search-row">
               <input className="rk-input" value={query} onChange={e => setQuery(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && analyze()}
-                placeholder='Enter a niche, e.g. "dog mom shirt", "nurse gift"' />
+                placeholder='Enter a niche, e.g. "halloween cat shirt", "matcha lover mug"' />
               <button className="rk-btn" onClick={() => analyze()} disabled={loading}>
                 {loading ? "Analyzing..." : "Analyze →"}
               </button>
@@ -219,6 +411,21 @@ export default function Competition() {
 
             {data && !loading && (
               <div className="rk-fade">
+                {/* VERDICT BANNER */}
+                <div className="rk-verdict" style={{ background: data.verdict.bg, borderColor: data.verdict.border }}>
+                  <div className="rk-verdict-emoji">{data.verdict.emoji}</div>
+                  <div className="rk-verdict-content">
+                    <div className="rk-verdict-label" style={{ color: data.verdict.color }}>Verdict for "{data.keyword}"</div>
+                    <div className="rk-verdict-main" style={{ color: data.verdict.color }}>{data.verdict.label}</div>
+                    <div className="rk-verdict-sub">{data.verdict.text}</div>
+                  </div>
+                  <div className="rk-verdict-score">
+                    <div className="rk-verdict-score-num" style={{ color: data.verdict.color }}>{data.score}</div>
+                    <div className="rk-verdict-score-label">out of 100</div>
+                  </div>
+                </div>
+
+                {/* STATS */}
                 <div className="rk-stats">
                   {[
                     { label: "Competition Score", value: `${data.score}/100`, color: levelColors[data.level]?.text },
@@ -243,12 +450,32 @@ export default function Competition() {
                   </div>
                 </div>
 
+                {/* DYNAMIC TIPS */}
                 <div className="rk-tips">
-                  <div className="rk-tips-title">💡 Strategy Tips</div>
-                  {data.tips.map((tip: string, i: number) => (
-                    <div key={i} className="rk-tip"><span style={{ color: "#fb923c" }}>•</span>{tip}</div>
+                  <div className="rk-tips-title">💡 Personalized Strategy</div>
+                  {data.tips.map((tip: any, i: number) => (
+                    <div key={i} className="rk-tip-item">
+                      <span className="rk-tip-icon">{tip.icon}</span>
+                      <span className="rk-tip-text">{tip.text}</span>
+                    </div>
                   ))}
                 </div>
+
+                {/* ALTERNATIVES (only if score is high) */}
+                {data.alternatives.length > 0 && (
+                  <div className="rk-alts">
+                    <div className="rk-alts-title">🎯 Better Alternatives</div>
+                    <div className="rk-alts-sub">This niche is too saturated — try these less competitive variants instead:</div>
+                    <div className="rk-alts-grid">
+                      {data.alternatives.map((alt: any, i: number) => (
+                        <div key={i} className="rk-alt-item" onClick={() => { setQuery(alt.name); analyze(alt.name); }}>
+                          <div className="rk-alt-name">→ {alt.name}</div>
+                          <div className="rk-alt-reason">{alt.reason}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 <div className="rk-table-card">
                   <div className="rk-table-head">Top Sellers in this Niche</div>
@@ -280,7 +507,7 @@ export default function Competition() {
               <div className="rk-empty">
                 <div style={{ fontSize: 36, marginBottom: 16, opacity: 0.15 }}>📊</div>
                 <div style={{ fontSize: 15, fontWeight: 600, color: "#334155", marginBottom: 6 }}>Ready to analyze</div>
-                <div style={{ fontSize: 13, color: "#1e293b" }}>Enter a niche to see competition data</div>
+                <div style={{ fontSize: 13, color: "#1e293b" }}>Enter a niche to see competition data + verdict</div>
               </div>
             )}
           </div>
