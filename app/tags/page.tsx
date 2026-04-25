@@ -2,6 +2,62 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+// ============================================
+// DYNAMIC SUGGESTIONS
+// ============================================
+function getDynamicSuggestions(): string[] {
+  const month = new Date().getMonth() + 1;
+  const seasonal: Record<number, string[]> = {
+    1: ["valentines day shirt", "winter cozy mug", "new year goals"],
+    2: ["valentines gift", "galentines day", "spring prep"],
+    3: ["st patricks day", "spring vibes", "easter mom"],
+    4: ["mothers day mug", "spring break shirt", "easter hunt"],
+    5: ["mothers day gift", "graduation 2026", "teacher appreciation"],
+    6: ["fathers day shirt", "summer vibes", "pride month"],
+    7: ["4th of july", "summer beach mug", "patriotic shirt"],
+    8: ["back to school", "teacher gift", "first day of school"],
+    9: ["fall vibes shirt", "halloween prep", "pumpkin spice"],
+    10: ["halloween shirt", "spooky season", "fall aesthetic"],
+    11: ["thanksgiving", "christmas funny", "black friday"],
+    12: ["christmas gift", "stocking stuffer", "ugly sweater"],
+  };
+  const trending = ["matcha lover", "boy mom era", "plant mom"];
+  return [...(seasonal[month] || []), ...trending].slice(0, 8);
+}
+
+// ============================================
+// SMART INSIGHTS based on tag results
+// ============================================
+function getInsights(tags: any[]) {
+  if (!tags?.length) return [];
+  const insights = [];
+  
+  const lowComp = tags.filter(t => t.competition === "Low");
+  const highComp = tags.filter(t => t.competition === "High");
+  const bestTag = [...tags].sort((a, b) => b.score - a.score)[0];
+  const totalVol = tags.reduce((acc, t) => acc + (t.volume || 0), 0);
+  
+  if (lowComp.length >= 5) {
+    insights.push({ icon: "🎯", text: `${lowComp.length} low-competition tags found — easy ranking opportunities. Use them first.` });
+  } else if (highComp.length > tags.length / 2) {
+    insights.push({ icon: "⚠️", text: `Most tags here are saturated. Consider niching down or combining with profession/event keywords.` });
+  }
+  
+  if (bestTag && bestTag.score >= 60) {
+    insights.push({ icon: "⭐", text: `"${bestTag.tag}" is your top tag (score ${bestTag.score}/100). Use it as your primary keyword in title.` });
+  }
+  
+  if (totalVol > 100000) {
+    insights.push({ icon: "🔥", text: `High demand niche — ${(totalVol / 1000).toFixed(0)}K monthly searches. Worth investing in 5+ designs.` });
+  } else if (totalVol < 5000) {
+    insights.push({ icon: "💎", text: `Micro-niche with ~${totalVol.toLocaleString()} searches/mo. Less competition but lower volume — go premium pricing.` });
+  }
+  
+  insights.push({ icon: "💡", text: `Etsy allows 13 tags max. POD platforms (Redbubble, TeePublic, Amazon Merch) accept similar tags — copy these to all your stores.` });
+  
+  return insights.slice(0, 3);
+}
+
 export default function TagGenerator() {
   const router = useRouter();
   const [query, setQuery] = useState("");
@@ -11,7 +67,7 @@ export default function TagGenerator() {
   const [copied, setCopied] = useState(false);
 
   const nav = [
-    { label: "Keyword Research", path: "/dashboard", emoji: "🔍" },
+    { label: "POD Decision", path: "/dashboard", emoji: "🎯" },
     { label: "Competition", path: "/competition", emoji: "📊" },
     { label: "Trends", path: "/trends", emoji: "📈" },
     { label: "Tag Generator", path: "/tags", emoji: "🏷️", active: true },
@@ -23,6 +79,7 @@ export default function TagGenerator() {
   async function handleGenerate(kw?: string) {
     const keyword = kw || query;
     if (!keyword.trim()) return;
+    setQuery(keyword);
     setLoading(true); setNoResult(false); setResult(null);
     try {
       const res = await fetch("/api/tags", {
@@ -49,7 +106,8 @@ export default function TagGenerator() {
   const scoreBorder = (score: number) => score >= 60 ? "rgba(52,211,153,0.25)" : score >= 30 ? "rgba(251,191,36,0.25)" : "rgba(248,113,113,0.25)";
   const compColor = (c: string) => c === "Low" ? "#34d399" : c === "Medium" ? "#fbbf24" : "#f87171";
 
-  const suggestions = ["dog mom shirt", "cat lover mug", "nurse gift", "teacher appreciation", "halloween witch", "christmas funny", "birthday queen", "vintage retro"];
+  const suggestions = getDynamicSuggestions();
+  const insights = result ? getInsights(result.tags) : [];
 
   return (
     <>
@@ -94,6 +152,15 @@ export default function TagGenerator() {
         table.rkt td { padding: 12px 0; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.03); }
         table.rkt tr:last-child td { border-bottom: none; }
         table.rkt tr:hover td { background: rgba(255,255,255,0.01); }
+        
+        /* INSIGHTS */
+        .rk-insights { background: rgba(129,140,248,0.06); border: 1px solid rgba(129,140,248,0.18); border-radius: 14px; padding: 18px 22px; }
+        .rk-insights-title { font-size: 11px; font-weight: 700; color: #a5b4fc; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 14px; }
+        .rk-insight-item { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid rgba(129,140,248,0.06); }
+        .rk-insight-item:last-child { border-bottom: none; }
+        .rk-insight-icon { font-size: 18px; line-height: 1.2; flex-shrink: 0; }
+        .rk-insight-text { font-size: 13px; color: #cbd5e1; line-height: 1.55; }
+        
         @keyframes rkfade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
         @keyframes dpulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
         @keyframes spin { to{transform:rotate(360deg)} }
@@ -125,12 +192,12 @@ export default function TagGenerator() {
           </div>
           <div className="rk-content">
             <div className="rk-title">🏷️ Tag Generator</div>
-            <div className="rk-sub">Generate 13 optimized Etsy tags instantly — ranked by volume & competition</div>
+            <div className="rk-sub">Generate 13 optimized tags instantly — works for Etsy, Redbubble, TeePublic, Amazon Merch.</div>
 
             <div className="rk-search-row">
               <input className="rk-input" value={query} onChange={e => setQuery(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && handleGenerate()}
-                placeholder='e.g. "dog mom shirt", "custom mug", "nurse gift"' />
+                placeholder='e.g. "matcha lover mug", "halloween cat shirt", "boy mom era"' />
               <button className="rk-btn" onClick={() => handleGenerate()} disabled={loading}>
                 {loading ? "Generating..." : "Generate Tags →"}
               </button>
@@ -138,7 +205,7 @@ export default function TagGenerator() {
 
             <div className="rk-chips">
               {suggestions.map(s => (
-                <button key={s} className="rk-chip" onClick={() => { setQuery(s); handleGenerate(s); }}>{s}</button>
+                <button key={s} className="rk-chip" onClick={() => handleGenerate(s)}>{s}</button>
               ))}
             </div>
 
@@ -200,11 +267,15 @@ export default function TagGenerator() {
                   </table>
                 </div>
 
-                <div style={{ background: "rgba(129,140,248,0.06)", border: "1px solid rgba(129,140,248,0.15)", borderRadius: 14, padding: "16px 22px" }}>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: "#818cf8", marginBottom: 6 }}>💡 Pro tip</div>
-                  <div style={{ fontSize: 13, color: "#64748b", lineHeight: 1.6 }}>
-                    Etsy allows up to 13 tags per listing. Use the green tags first — they have the best balance of search volume and low competition.
-                  </div>
+                {/* DYNAMIC INSIGHTS */}
+                <div className="rk-insights">
+                  <div className="rk-insights-title">💡 Smart Insights</div>
+                  {insights.map((ins, i) => (
+                    <div key={i} className="rk-insight-item">
+                      <span className="rk-insight-icon">{ins.icon}</span>
+                      <span className="rk-insight-text">{ins.text}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
@@ -213,7 +284,7 @@ export default function TagGenerator() {
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 260, textAlign: "center" }}>
                 <div style={{ fontSize: 36, marginBottom: 16, opacity: 0.15 }}>🏷️</div>
                 <div style={{ fontSize: 15, fontWeight: 600, color: "#334155", marginBottom: 6 }}>Ready to generate</div>
-                <div style={{ fontSize: 13, color: "#1e293b" }}>Enter a product to get optimized Etsy tags</div>
+                <div style={{ fontSize: 13, color: "#1e293b" }}>Enter a niche to get optimized tags for all POD platforms</div>
               </div>
             )}
           </div>
