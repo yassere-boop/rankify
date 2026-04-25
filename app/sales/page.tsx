@@ -12,19 +12,37 @@ const PRODUCTS = [
   { name: "Phone Case", printCost: 8.00, avgPrice: 18.99 },
 ];
 
-const NICHES = [
-  { name: "Dog Mom", monthlySearches: 4400, competition: 72 },
-  { name: "Cat Lover", monthlySearches: 2900, competition: 65 },
-  { name: "Nurse Gift", monthlySearches: 1800, competition: 45 },
-  { name: "Teacher Gift", monthlySearches: 2200, competition: 55 },
-  { name: "Halloween", monthlySearches: 8900, competition: 70 },
-  { name: "Christmas", monthlySearches: 12000, competition: 85 },
-  { name: "Birthday", monthlySearches: 6700, competition: 80 },
-  { name: "Funny Shirt", monthlySearches: 9500, competition: 95 },
-];
+// ============================================
+// DYNAMIC NICHES - seasonal + evergreen
+// ============================================
+function getDynamicNiches() {
+  const month = new Date().getMonth() + 1;
+  const evergreen = [
+    { name: "Dog Mom", monthlySearches: 4400, competition: 72 },
+    { name: "Cat Lover", monthlySearches: 2900, competition: 65 },
+    { name: "Nurse Gift", monthlySearches: 1800, competition: 45 },
+    { name: "Teacher Gift", monthlySearches: 2200, competition: 55 },
+  ];
+  const seasonal: Record<number, any[]> = {
+    1: [{ name: "Valentine's", monthlySearches: 14000, competition: 78 }],
+    2: [{ name: "Valentine's", monthlySearches: 22000, competition: 80 }],
+    3: [{ name: "St Patrick's", monthlySearches: 9500, competition: 60 }],
+    4: [{ name: "Mother's Day", monthlySearches: 18000, competition: 70 }, { name: "Graduation", monthlySearches: 12000, competition: 65 }],
+    5: [{ name: "Mother's Day", monthlySearches: 28000, competition: 75 }, { name: "Father's Day", monthlySearches: 15000, competition: 65 }],
+    6: [{ name: "Father's Day", monthlySearches: 22000, competition: 70 }, { name: "Pride", monthlySearches: 8000, competition: 50 }],
+    7: [{ name: "4th of July", monthlySearches: 16000, competition: 60 }, { name: "Halloween", monthlySearches: 8900, competition: 70 }],
+    8: [{ name: "Back to School", monthlySearches: 14000, competition: 55 }, { name: "Halloween", monthlySearches: 18000, competition: 75 }],
+    9: [{ name: "Halloween", monthlySearches: 35000, competition: 80 }, { name: "Christmas", monthlySearches: 14000, competition: 75 }],
+    10: [{ name: "Halloween", monthlySearches: 55000, competition: 88 }, { name: "Christmas", monthlySearches: 25000, competition: 80 }],
+    11: [{ name: "Christmas", monthlySearches: 45000, competition: 85 }, { name: "Thanksgiving", monthlySearches: 12000, competition: 60 }],
+    12: [{ name: "Christmas", monthlySearches: 60000, competition: 90 }, { name: "New Year", monthlySearches: 8000, competition: 55 }],
+  };
+  return [...(seasonal[month] || []), ...evergreen].slice(0, 8);
+}
 
 export default function SalesEstimator() {
   const router = useRouter();
+  const NICHES = getDynamicNiches();
   const [product, setProduct] = useState(PRODUCTS[0]);
   const [niche, setNiche] = useState(NICHES[0]);
   const [sellPrice, setSellPrice] = useState(24.99);
@@ -32,7 +50,7 @@ export default function SalesEstimator() {
   const [result, setResult] = useState<any>(null);
 
   const nav = [
-    { label: "Keyword Research", path: "/dashboard", emoji: "🔍" },
+    { label: "POD Decision", path: "/dashboard", emoji: "🎯" },
     { label: "Competition", path: "/competition", emoji: "📊" },
     { label: "Trends", path: "/trends", emoji: "📈" },
     { label: "Tag Generator", path: "/tags", emoji: "🏷️" },
@@ -42,9 +60,9 @@ export default function SalesEstimator() {
   ];
 
   const calculate = () => {
-    const etsyFee = sellPrice * 0.065 + 0.20;
+    const platformFee = sellPrice * 0.065 + 0.20;
     const paymentFee = sellPrice * 0.03 + 0.25;
-    const netProfit = sellPrice - product.printCost - etsyFee - paymentFee;
+    const netProfit = sellPrice - product.printCost - platformFee - paymentFee;
     const margin = ((netProfit / sellPrice) * 100).toFixed(1);
     const competitionFactor = (100 - niche.competition) / 100;
     const searchFactor = Math.min(niche.monthlySearches / 10000, 1);
@@ -53,14 +71,45 @@ export default function SalesEstimator() {
     const monthlyRevenue = (monthlySales * sellPrice).toFixed(2);
     const monthlyProfit = (monthlySales * netProfit).toFixed(2);
     const yearlyProfit = (Number(monthlyProfit) * 12).toFixed(2);
+    
+    // Calculate "if you scale" scenarios
+    const scaleListings = listings * 5;
+    const scaleSales = Math.max(Math.floor(estimatedVisitors * 0.02 * scaleListings * 5), 1);
+    const scaleProfit = (scaleSales * netProfit).toFixed(2);
+    
     setResult({
       netProfit: netProfit.toFixed(2), margin, monthlySales,
       monthlyRevenue, monthlyProfit, yearlyProfit,
+      platformFee: platformFee.toFixed(2), paymentFee: paymentFee.toFixed(2),
+      scaleListings, scaleProfit,
       rating: netProfit > 12 && monthlySales > 50 ? "Excellent" : netProfit > 8 && monthlySales > 20 ? "Good" : "Low",
     });
   };
 
   const ratingColor = (r: string) => r === "Excellent" ? "#34d399" : r === "Good" ? "#fbbf24" : "#f87171";
+
+  // Action plan based on result
+  const getActionPlan = () => {
+    if (!result) return [];
+    const plan = [];
+    
+    if (result.rating === "Low") {
+      plan.push({ icon: "💰", text: `Raise selling price to $${(sellPrice + 5).toFixed(2)} — adds $5 per sale` });
+      plan.push({ icon: "🎯", text: `Switch to lower-competition niche (current niche has ${niche.competition}/100 competition)` });
+      plan.push({ icon: "📦", text: `Lower-cost product: try Mug ($6.50) or Poster ($5) for better margins` });
+    } else if (result.rating === "Good") {
+      plan.push({ icon: "📈", text: `Scale to ${result.scaleListings} listings → est. $${result.scaleProfit}/mo profit (5x growth)` });
+      plan.push({ icon: "💰", text: `Add personalization upsell (+$3-5 per sale) to boost margins` });
+      plan.push({ icon: "🎨", text: `Test 3 design variations per listing to find winners` });
+    } else {
+      plan.push({ icon: "🚀", text: `You're on fire! Scale to ${result.scaleListings} listings → est. $${result.scaleProfit}/mo` });
+      plan.push({ icon: "🌐", text: `Multi-list on Redbubble + TeePublic for free additional revenue` });
+      plan.push({ icon: "💎", text: `Add premium variant at $${(sellPrice + 8).toFixed(2)} for higher margins` });
+    }
+    return plan;
+  };
+
+  const actionPlan = getActionPlan();
 
   return (
     <>
@@ -105,6 +154,21 @@ export default function SalesEstimator() {
         .rk-stat-sub { font-size: 11px; color: #475569; margin-top: 3px; }
         .rk-big-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; margin-bottom: 16px; }
         .rk-big-stat { background: #1e293b; border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 20px 22px; }
+        
+        /* ACTION PLAN */
+        .rk-actions { background: rgba(129,140,248,0.06); border: 1px solid rgba(129,140,248,0.2); border-radius: 14px; padding: 20px 24px; margin-top: 16px; }
+        .rk-actions-title { font-size: 11px; font-weight: 700; color: #a5b4fc; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 14px; }
+        .rk-action-item { display: flex; gap: 12px; padding: 11px 0; border-bottom: 1px solid rgba(129,140,248,0.06); }
+        .rk-action-item:last-child { border-bottom: none; }
+        .rk-action-icon { font-size: 18px; line-height: 1.3; flex-shrink: 0; }
+        .rk-action-text { font-size: 13px; color: #cbd5e1; line-height: 1.55; }
+        
+        /* FEE BREAKDOWN */
+        .rk-fees { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 16px 20px; margin-bottom: 16px; }
+        .rk-fee-row { display: flex; justify-content: space-between; padding: 7px 0; font-size: 12px; }
+        .rk-fee-label { color: #64748b; }
+        .rk-fee-val { font-weight: 600; }
+        
         .rk-fade { animation: rkfade 0.35s ease; }
         @keyframes rkfade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
         @keyframes dpulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
@@ -132,11 +196,11 @@ export default function SalesEstimator() {
 
         <div className="rk-main">
           <div className="rk-topbar">
-            <span style={{ fontSize: 12, color: "#334155" }}>Sales Estimator · Profit calculator with Etsy fees</span>
+            <span style={{ fontSize: 12, color: "#334155" }}>Sales Estimator · POD profit calculator</span>
           </div>
           <div className="rk-content">
             <div className="rk-title">💰 Sales Estimator</div>
-            <div className="rk-sub">Estimate your monthly sales and profit before you design</div>
+            <div className="rk-sub">Estimate your monthly sales, profit & action plan to reach those numbers.</div>
 
             <div className="rk-grid2">
               <div className="rk-card">
@@ -151,7 +215,7 @@ export default function SalesEstimator() {
                 </div>
               </div>
               <div className="rk-card">
-                <div className="rk-card-title">Niche</div>
+                <div className="rk-card-title">Niche (current season)</div>
                 <div className="rk-pills">
                   {NICHES.map(n => (
                     <button key={n.name} onClick={() => setNiche(n)}
@@ -205,6 +269,19 @@ export default function SalesEstimator() {
                   ))}
                 </div>
 
+                {/* FEE BREAKDOWN */}
+                <div className="rk-fees">
+                  <div style={{ fontSize: 10, fontWeight: 700, color: "#475569", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 10 }}>💳 Fee Breakdown (per sale)</div>
+                  <div className="rk-fee-row"><span className="rk-fee-label">Selling price</span><span className="rk-fee-val" style={{ color: "#e2e8f0" }}>+${sellPrice}</span></div>
+                  <div className="rk-fee-row"><span className="rk-fee-label">{product.name} print cost (Printify)</span><span className="rk-fee-val" style={{ color: "#f87171" }}>-${product.printCost}</span></div>
+                  <div className="rk-fee-row"><span className="rk-fee-label">Platform fee (6.5% + $0.20)</span><span className="rk-fee-val" style={{ color: "#f87171" }}>-${result.platformFee}</span></div>
+                  <div className="rk-fee-row"><span className="rk-fee-label">Payment fee (3% + $0.25)</span><span className="rk-fee-val" style={{ color: "#f87171" }}>-${result.paymentFee}</span></div>
+                  <div className="rk-fee-row" style={{ borderTop: "1px solid rgba(255,255,255,0.08)", marginTop: 6, paddingTop: 10 }}>
+                    <span style={{ color: "#cbd5e1", fontWeight: 700 }}>Net profit per sale</span>
+                    <span className="rk-fee-val" style={{ color: "#34d399", fontSize: 14 }}>${result.netProfit}</span>
+                  </div>
+                </div>
+
                 <div className="rk-big-grid">
                   <div className="rk-big-stat">
                     <div className="rk-stat-label">Yearly Profit Potential</div>
@@ -219,7 +296,7 @@ export default function SalesEstimator() {
                 </div>
 
                 <div style={{
-                  borderRadius: 14, padding: "16px 22px",
+                  borderRadius: 14, padding: "16px 22px", marginBottom: 16,
                   background: result.rating === "Excellent" ? "rgba(52,211,153,0.06)" : result.rating === "Good" ? "rgba(251,191,36,0.06)" : "rgba(248,113,113,0.06)",
                   border: `1px solid ${result.rating === "Excellent" ? "rgba(52,211,153,0.2)" : result.rating === "Good" ? "rgba(251,191,36,0.2)" : "rgba(248,113,113,0.2)"}`,
                 }}>
@@ -233,6 +310,17 @@ export default function SalesEstimator() {
                       ? `Decent potential. Consider raising your price by $2-5 or adding more listings to increase returns.`
                       : `Margins are thin or competition is too high. Try a different niche or product type.`}
                   </div>
+                </div>
+
+                {/* ACTION PLAN */}
+                <div className="rk-actions">
+                  <div className="rk-actions-title">🎯 Action Plan to Reach These Numbers</div>
+                  {actionPlan.map((a, i) => (
+                    <div key={i} className="rk-action-item">
+                      <span className="rk-action-icon">{a.icon}</span>
+                      <span className="rk-action-text">{a.text}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
