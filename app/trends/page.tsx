@@ -3,7 +3,66 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-const SUGGESTIONS = ["dog mom", "halloween", "christmas", "nurse gift", "teacher", "birthday", "vintage", "cat lover"];
+
+// ============================================
+// DYNAMIC SUGGESTIONS
+// ============================================
+function getDynamicSuggestions(): string[] {
+  const month = new Date().getMonth() + 1;
+  const seasonal: Record<number, string[]> = {
+    1: ["valentines day", "winter cozy", "new year"],
+    2: ["valentines gift", "spring vibes", "galentines"],
+    3: ["st patricks day", "easter mom", "spring break"],
+    4: ["mothers day", "graduation 2026", "easter hunt"],
+    5: ["mothers day mug", "fathers day", "teacher gift"],
+    6: ["fathers day", "summer vibes", "pride month"],
+    7: ["4th of july", "summer beach", "back to school"],
+    8: ["back to school", "halloween prep", "teacher gift"],
+    9: ["halloween", "fall vibes", "pumpkin spice"],
+    10: ["halloween shirt", "thanksgiving", "fall aesthetic"],
+    11: ["thanksgiving", "christmas", "black friday"],
+    12: ["christmas gift", "new year", "holiday mug"],
+  };
+  const trending = ["matcha lover", "boy mom era", "plant mom"];
+  return [...(seasonal[month] || []), ...trending].slice(0, 8);
+}
+
+// ============================================
+// SEASONAL INSIGHTS - what to upload by month
+// ============================================
+const SEASONAL_INSIGHTS: Record<number, { event: string; uploadNow: string[] }> = {
+  1: { event: "Valentine's Day (Feb 14)", uploadNow: ["valentines couple", "anti-valentine funny", "galentines"] },
+  2: { event: "St. Patrick's & Spring", uploadNow: ["st patricks day", "spring flowers", "easter mom"] },
+  3: { event: "Easter & Mother's Day prep", uploadNow: ["easter bunny", "mothers day", "spring vibes"] },
+  4: { event: "Mother's Day & Graduation", uploadNow: ["mothers day mug", "graduation 2026", "teacher appreciation"] },
+  5: { event: "Father's Day (June 15)", uploadNow: ["fathers day", "dog dad", "grill master"] },
+  6: { event: "4th of July & Summer", uploadNow: ["4th of july", "summer beach", "patriotic"] },
+  7: { event: "Halloween prep (CRITICAL)", uploadNow: ["halloween witch", "spooky season", "halloween cat"] },
+  8: { event: "Halloween + Back to School", uploadNow: ["teacher gift", "halloween shirt", "first day school"] },
+  9: { event: "Christmas prep starts NOW", uploadNow: ["christmas funny", "thanksgiving", "fall aesthetic"] },
+  10: { event: "Christmas (CRITICAL)", uploadNow: ["christmas gift", "stocking stuffer", "ugly sweater"] },
+  11: { event: "Christmas + New Year", uploadNow: ["christmas mug", "new year goals", "winter cozy"] },
+  12: { event: "Valentine's prep + New Year", uploadNow: ["valentines couple", "new year goals", "winter vibes"] },
+};
+
+// ============================================
+// BEST MONTH TO UPLOAD
+// ============================================
+function getBestUploadMonth(months: any[]): { peakMonth: string; uploadMonth: string; weeksUntilPeak: number } | null {
+  if (!months?.length) return null;
+  let peakIdx = 0, peakVol = 0;
+  months.forEach((m: any, i: number) => {
+    if (m.volume > peakVol) { peakVol = m.volume; peakIdx = i; }
+  });
+  const uploadIdx = (peakIdx - 2 + 12) % 12;
+  const currentIdx = new Date().getMonth();
+  const weeksUntilPeak = ((peakIdx - currentIdx + 12) % 12) * 4;
+  return {
+    peakMonth: MONTHS[peakIdx],
+    uploadMonth: MONTHS[uploadIdx],
+    weeksUntilPeak,
+  };
+}
 
 export default function TrendGraph() {
   const router = useRouter();
@@ -13,7 +72,7 @@ export default function TrendGraph() {
   const [noResult, setNoResult] = useState(false);
 
   const nav = [
-    { label: "Keyword Research", path: "/dashboard", emoji: "🔍" },
+    { label: "POD Decision", path: "/dashboard", emoji: "🎯" },
     { label: "Competition", path: "/competition", emoji: "📊" },
     { label: "Trends", path: "/trends", emoji: "📈", active: true },
     { label: "Tag Generator", path: "/tags", emoji: "🏷️" },
@@ -23,10 +82,13 @@ export default function TrendGraph() {
   ];
 
   const currentMonth = new Date().getMonth();
+  const SUGGESTIONS = getDynamicSuggestions();
+  const insights = SEASONAL_INSIGHTS[currentMonth + 1];
 
   async function handleAnalyze(kw?: string) {
     const keyword = kw || query;
     if (!keyword.trim()) return;
+    setQuery(keyword);
     setLoading(true); setNoResult(false); setResult(null);
     try {
       const res = await fetch("/api/trends", {
@@ -88,10 +150,12 @@ export default function TrendGraph() {
     );
   }
 
+  const uploadInfo = result ? getBestUploadMonth(result.months) : null;
+
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         .rk { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: #0f1623; color: #cbd5e1; min-height: 100vh; display: flex; }
         .rk-side { width: 228px; background: #111827; border-right: 1px solid rgba(255,255,255,0.07); display: flex; flex-direction: column; flex-shrink: 0; padding: 24px 14px 20px; }
         .rk-logo { font-size: 18px; font-weight: 700; color: #f8fafc; letter-spacing: -0.03em; padding: 0 6px; margin-bottom: 8px; }
@@ -111,7 +175,7 @@ export default function TrendGraph() {
         .rk-topbar { height: 48px; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; padding: 0 36px; background: #0f1623; flex-shrink: 0; }
         .rk-content { flex: 1; padding: 36px 40px; overflow-y: auto; }
         .rk-title { font-size: 22px; font-weight: 700; color: #f1f5f9; letter-spacing: -0.025em; margin-bottom: 6px; }
-        .rk-sub { font-size: 13px; color: #475569; margin-bottom: 28px; }
+        .rk-sub { font-size: 13px; color: #475569; margin-bottom: 20px; }
         .rk-search-row { display: flex; gap: 10px; margin-bottom: 14px; }
         .rk-input { flex: 1; background: #1e293b; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 13px 18px; color: #e2e8f0; font-size: 14px; outline: none; font-family: inherit; transition: all 0.15s; }
         .rk-input::placeholder { color: #334155; }
@@ -119,7 +183,7 @@ export default function TrendGraph() {
         .rk-btn { background: #6366f1; color: #fff; border: none; border-radius: 12px; padding: 13px 26px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; white-space: nowrap; transition: all 0.15s; }
         .rk-btn:hover:not(:disabled) { background: #4f46e5; transform: translateY(-1px); }
         .rk-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-        .rk-chips { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 32px; }
+        .rk-chips { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 24px; }
         .rk-chip { padding: 6px 14px; border-radius: 20px; background: #1e293b; border: 1px solid rgba(255,255,255,0.07); color: #475569; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.12s; font-family: inherit; }
         .rk-chip:hover { background: rgba(99,102,241,0.1); border-color: rgba(99,102,241,0.3); color: #a5b4fc; }
         .rk-card { background: #1e293b; border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 20px 22px; margin-bottom: 16px; }
@@ -131,9 +195,33 @@ export default function TrendGraph() {
         .rk-fade { animation: rkfade 0.35s ease; }
         .rk-cal { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 8px; }
         .rk-cal-item { border-radius: 10px; padding: 10px 12px; border: 1px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.02); }
+        
+        /* SEASONAL ALERT */
+        .rk-alert { background: rgba(251,146,60,0.08); border: 1px solid rgba(251,146,60,0.25); border-radius: 14px; padding: 18px 22px; margin-bottom: 24px; display: flex; gap: 16px; align-items: flex-start; }
+        .rk-alert-icon { font-size: 28px; line-height: 1; flex-shrink: 0; }
+        .rk-alert-content { flex: 1; }
+        .rk-alert-title { font-size: 14px; font-weight: 700; color: #fb923c; margin-bottom: 4px; }
+        .rk-alert-desc { font-size: 13px; color: #cbd5e1; margin-bottom: 10px; line-height: 1.5; }
+        .rk-alert-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+        .rk-alert-tag { padding: 4px 10px; background: rgba(251,146,60,0.12); border: 1px solid rgba(251,146,60,0.25); border-radius: 20px; font-size: 11px; font-weight: 600; color: #fb923c; cursor: pointer; transition: all 0.12s; }
+        .rk-alert-tag:hover { background: rgba(251,146,60,0.2); }
+        
+        /* UPLOAD STRATEGY */
+        .rk-upload-banner { background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(139,92,246,0.1)); border: 1px solid rgba(129,140,248,0.3); border-radius: 14px; padding: 22px 24px; margin-bottom: 16px; }
+        .rk-upload-title { font-size: 11px; font-weight: 700; color: #a5b4fc; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
+        .rk-upload-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+        .rk-upload-cell { }
+        .rk-upload-cell-label { font-size: 10px; font-weight: 600; color: #475569; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 6px; }
+        .rk-upload-cell-val { font-size: 22px; font-weight: 800; color: #f1f5f9; letter-spacing: -0.02em; }
+        .rk-upload-cell-sub { font-size: 11px; color: #64748b; margin-top: 4px; }
+        
         @keyframes rkfade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
         @keyframes dpulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
         @keyframes spin { to{transform:rotate(360deg)} }
+        @media (max-width: 768px) {
+          .rk-upload-grid { grid-template-columns: 1fr; }
+          .rk-stats { grid-template-columns: repeat(2, 1fr); }
+        }
       `}</style>
 
       <div className="rk">
@@ -162,12 +250,28 @@ export default function TrendGraph() {
           </div>
           <div className="rk-content">
             <div className="rk-title">📈 Trend Analyzer</div>
-            <div className="rk-sub">See when to upload designs for maximum seasonal sales</div>
+            <div className="rk-sub">See exactly when to upload designs for maximum seasonal sales.</div>
+
+            {/* SEASONAL ALERT - what to upload NOW */}
+            {insights && (
+              <div className="rk-alert">
+                <div className="rk-alert-icon">📅</div>
+                <div className="rk-alert-content">
+                  <div className="rk-alert-title">Upload for {insights.event} — list NOW to rank in time</div>
+                  <div className="rk-alert-desc">Etsy needs 6–10 weeks to rank new listings. These niches are the priority for {MONTHS[currentMonth]}:</div>
+                  <div className="rk-alert-tags">
+                    {insights.uploadNow.map(tag => (
+                      <button key={tag} className="rk-alert-tag" onClick={() => handleAnalyze(tag)}>→ {tag}</button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="rk-search-row">
               <input className="rk-input" value={query} onChange={e => setQuery(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && handleAnalyze()}
-                placeholder='Try "halloween witch", "christmas funny", "dog mom"' />
+                placeholder='Try "halloween witch", "matcha lover", "boy mom era"' />
               <button className="rk-btn" onClick={() => handleAnalyze()} disabled={loading}>
                 {loading ? "Loading..." : "Show Trend →"}
               </button>
@@ -175,7 +279,7 @@ export default function TrendGraph() {
 
             <div className="rk-chips">
               {SUGGESTIONS.map(s => (
-                <button key={s} className="rk-chip" onClick={() => { setQuery(s); handleAnalyze(s); }}>{s}</button>
+                <button key={s} className="rk-chip" onClick={() => handleAnalyze(s)}>{s}</button>
               ))}
             </div>
 
@@ -185,6 +289,7 @@ export default function TrendGraph() {
 
             {result && !loading && (
               <div className="rk-fade">
+                {/* Verdict banner */}
                 <div style={{ background: verdictConfig[result.verdict]?.bg, border: `1px solid ${verdictConfig[result.verdict]?.border}`, borderRadius: 14, padding: "16px 22px", marginBottom: 16, display: "flex", alignItems: "center", gap: 16 }}>
                   <span style={{ fontSize: 28, fontWeight: 700, color: verdictConfig[result.verdict]?.color }}>{verdictConfig[result.verdict]?.icon}</span>
                   <div>
@@ -196,6 +301,30 @@ export default function TrendGraph() {
                     </div>
                   </div>
                 </div>
+
+                {/* UPLOAD STRATEGY BANNER */}
+                {uploadInfo && (
+                  <div className="rk-upload-banner">
+                    <div className="rk-upload-title">🎯 Upload Strategy</div>
+                    <div className="rk-upload-grid">
+                      <div className="rk-upload-cell">
+                        <div className="rk-upload-cell-label">Peak Sales Month</div>
+                        <div className="rk-upload-cell-val" style={{ color: "#34d399" }}>{uploadInfo.peakMonth}</div>
+                        <div className="rk-upload-cell-sub">Highest demand window</div>
+                      </div>
+                      <div className="rk-upload-cell">
+                        <div className="rk-upload-cell-label">Best Time to Upload</div>
+                        <div className="rk-upload-cell-val" style={{ color: "#a5b4fc" }}>{uploadInfo.uploadMonth}</div>
+                        <div className="rk-upload-cell-sub">8 weeks before peak (ranking time)</div>
+                      </div>
+                      <div className="rk-upload-cell">
+                        <div className="rk-upload-cell-label">Weeks to Peak</div>
+                        <div className="rk-upload-cell-val" style={{ color: uploadInfo.weeksUntilPeak < 8 ? "#f87171" : uploadInfo.weeksUntilPeak < 16 ? "#fbbf24" : "#34d399" }}>{uploadInfo.weeksUntilPeak}w</div>
+                        <div className="rk-upload-cell-sub">{uploadInfo.weeksUntilPeak < 8 ? "🚨 Already late — upload TODAY" : uploadInfo.weeksUntilPeak < 16 ? "⚠️ Upload in next 2 weeks" : "✅ Plenty of time"}</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 <div className="rk-stats">
                   {[
@@ -221,14 +350,27 @@ export default function TrendGraph() {
                 <div className="rk-card" style={{ marginTop: 16 }}>
                   <div style={{ fontSize: 11, fontWeight: 600, color: "#475569", letterSpacing: "0.07em", textTransform: "uppercase", marginBottom: 16 }}>Seasonal Calendar</div>
                   <div className="rk-cal">
-                    {MONTHS.map((m, i) => (
-                      <div key={m} className="rk-cal-item" style={i === currentMonth ? { background: "rgba(99,102,241,0.1)", borderColor: "rgba(99,102,241,0.3)" } : {}}>
-                        <div style={{ fontSize: 11, fontWeight: 600, color: i === currentMonth ? "#a5b4fc" : "#475569", marginBottom: 4 }}>{m}</div>
-                        <div style={{ fontSize: 10, color: "#334155" }}>
-                          {i === currentMonth ? "← Now" : ""}
+                    {MONTHS.map((m, i) => {
+                      const monthData = result.months?.[i];
+                      const vol = monthData?.volume || 0;
+                      const isPeak = uploadInfo && m === uploadInfo.peakMonth;
+                      const isUpload = uploadInfo && m === uploadInfo.uploadMonth;
+                      const isCurrent = i === currentMonth;
+                      let bg = "rgba(255,255,255,0.02)", borderC = "rgba(255,255,255,0.05)";
+                      if (isPeak) { bg = "rgba(52,211,153,0.1)"; borderC = "rgba(52,211,153,0.3)"; }
+                      else if (isUpload) { bg = "rgba(129,140,248,0.1)"; borderC = "rgba(129,140,248,0.3)"; }
+                      else if (isCurrent) { bg = "rgba(255,255,255,0.04)"; borderC = "rgba(255,255,255,0.1)"; }
+                      return (
+                        <div key={m} className="rk-cal-item" style={{ background: bg, borderColor: borderC }}>
+                          <div style={{ fontSize: 11, fontWeight: 600, color: isPeak ? "#34d399" : isUpload ? "#a5b4fc" : isCurrent ? "#cbd5e1" : "#475569", marginBottom: 4 }}>
+                            {m} {isCurrent && "·"}
+                          </div>
+                          <div style={{ fontSize: 10, color: "#475569" }}>
+                            {isPeak ? "🎯 PEAK" : isUpload ? "📤 UPLOAD" : isCurrent ? "Now" : vol > 0 ? vol.toLocaleString() : ""}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -238,7 +380,7 @@ export default function TrendGraph() {
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 260, textAlign: "center" }}>
                 <div style={{ fontSize: 36, marginBottom: 16, opacity: 0.15 }}>📈</div>
                 <div style={{ fontSize: 15, fontWeight: 600, color: "#334155", marginBottom: 6 }}>Ready to analyze</div>
-                <div style={{ fontSize: 13, color: "#1e293b" }}>Enter a keyword to see monthly trends</div>
+                <div style={{ fontSize: 13, color: "#1e293b" }}>Enter a keyword to see monthly trends + best upload month</div>
               </div>
             )}
           </div>
