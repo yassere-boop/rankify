@@ -10,37 +10,62 @@ const PRINTIFY_COSTS: Record<string, number> = {
   "t-shirt": 8.50, "hoodie": 18.00, "sweatshirt": 15.00, "mug": 6.50, "tote bag": 9.00, "poster": 5.00, "phone case": 8.00,
 };
 
-const CALENDAR: Record<string, any[]> = {
-  "January": [{ niche: "Valentine's Day", urgency: "🔴 Urgent", tip: "Feb 14 is close — hearts, couples, funny anti-valentine" }, { niche: "Winter Cozy", urgency: "🟡 Soon", tip: "Hot cocoa, reading, hygge vibes" }],
-  "February": [{ niche: "St. Patrick's Day", urgency: "🔴 Urgent", tip: "March 17 — shamrocks, Irish pride, funny beer quotes" }, { niche: "Spring", urgency: "🟡 Soon", tip: "Flowers, gardening, renewal themes" }],
-  "March": [{ niche: "Easter", urgency: "🔴 Urgent", tip: "Bunnies, spring, religious themes" }, { niche: "Earth Day", urgency: "🟡 Soon", tip: "April 22 — eco, nature, plant lover" }],
-  "April": [{ niche: "Mother's Day", urgency: "🔴 Urgent", tip: "May — dog mom, cat mom, grandma, funny mom quotes" }, { niche: "Graduation", urgency: "🔴 Urgent", tip: "May/June — class of 2025, nurse grad, teacher grad" }],
-  "May": [{ niche: "Father's Day", urgency: "🔴 Urgent", tip: "June — dad jokes, dog dad, grill master, funny dad" }, { niche: "Summer", urgency: "🟡 Soon", tip: "Beach, vacation, sunshine vibes" }],
-  "June": [{ niche: "4th of July", urgency: "🔴 Urgent", tip: "American pride, funny patriotic, bbq themes" }, { niche: "Back to School", urgency: "🟡 Soon", tip: "Teacher gifts, school supplies, student life" }],
-  "July": [{ niche: "Halloween", urgency: "🔴 Urgent", tip: "October 31 — start NOW to rank in time. Witch, skeleton, spooky" }, { niche: "Fall/Autumn", urgency: "🟡 Soon", tip: "Pumpkin, leaves, cozy fall vibes" }],
-  "August": [{ niche: "Halloween", urgency: "🔴 Critical", tip: "Upload immediately — listings need 6-8 weeks to rank" }, { niche: "Thanksgiving", urgency: "🟡 Soon", tip: "November — grateful, turkey, family, funny food" }],
-  "September": [{ niche: "Christmas", urgency: "🔴 Urgent", tip: "Start Christmas NOW — needs 10-12 weeks to rank on Etsy" }, { niche: "Thanksgiving", urgency: "🔴 Urgent", tip: "November is close — family, grateful, funny food" }],
-  "October": [{ niche: "Christmas", urgency: "🔴 Critical", tip: "Christmas listings need to be live NOW to rank in time" }, { niche: "New Year", urgency: "🟡 Soon", tip: "Dec 31 — goals, fresh start, funny new year" }],
-  "November": [{ niche: "Valentine's Day", urgency: "🟡 Soon", tip: "Feb 14 — start early for best ranking" }, { niche: "Winter", urgency: "🟡 Soon", tip: "Cozy season, hot drinks, snow themes" }],
-  "December": [{ niche: "Valentine's Day", urgency: "🔴 Urgent", tip: "Feb 14 is 6 weeks away — couples, funny, galentine" }, { niche: "Spring", urgency: "🟡 Soon", tip: "Plan ahead — flowers, renewal, gardening" }],
-};
-
-const HOT_NICHES = [
-  { niche: "ICU Nurse Mom", saturation: 8, trend: "↑ Rising", opportunity: "Excellent", sales: "320/mo" },
-  { niche: "Golden Retriever Dad", saturation: 12, trend: "↑ Rising", opportunity: "Excellent", sales: "280/mo" },
-  { niche: "Halloween Teacher", saturation: 18, trend: "↑ Seasonal", opportunity: "Hot", sales: "890/mo" },
-  { niche: "Retired Nurse Life", saturation: 14, trend: "↑ Rising", opportunity: "Excellent", sales: "210/mo" },
-  { niche: "Book Lover Witch", saturation: 9, trend: "↑ Trending", opportunity: "Hot", sales: "340/mo" },
-  { niche: "Plant Mom Vintage", saturation: 11, trend: "↑ Rising", opportunity: "Excellent", sales: "190/mo" },
-  { niche: "Cat Dad Gamer", saturation: 6, trend: "↑ Rising", opportunity: "Hot", sales: "150/mo" },
-  { niche: "Dog Mom Yoga", saturation: 15, trend: "↑ Rising", opportunity: "Excellent", sales: "260/mo" },
-  { niche: "Funny Pharmacist", saturation: 7, trend: "↑ Rising", opportunity: "Hot", sales: "180/mo" },
-  { niche: "Camping Dad Joke", saturation: 10, trend: "→ Stable", opportunity: "Good", sales: "220/mo" },
-  { niche: "Nurse Christmas", saturation: 22, trend: "↑ Seasonal", opportunity: "Good", sales: "1200/mo" },
-  { niche: "Teacher Halloween", saturation: 19, trend: "↑ Seasonal", opportunity: "Good", sales: "760/mo" },
+// ============================================
+// EVENTS WITH DATES + TOP NICHES
+// ============================================
+const EVENTS_2026 = [
+  { name: "Valentine's Day", date: "2026-02-14", topNiches: ["valentines couple shirt", "anti-valentine funny", "galentines day", "i love you mug", "couple matching"] },
+  { name: "St Patrick's Day", date: "2026-03-17", topNiches: ["st patricks day shirt", "irish pride", "shamrock funny", "lucky charm", "drinking shirt"] },
+  { name: "Easter", date: "2026-04-05", topNiches: ["easter bunny", "easter mom", "easter eggs", "spring vibes", "pastel aesthetic"] },
+  { name: "Mother's Day", date: "2026-05-10", topNiches: ["mom est 2025", "dog mom mug", "plant mom shirt", "boy mom era", "bonus mom"] },
+  { name: "Graduation", date: "2026-05-15", topNiches: ["class of 2026", "nurse grad", "teacher grad", "senior 2026", "graduate mom"] },
+  { name: "Father's Day", date: "2026-06-21", topNiches: ["dog dad shirt", "girl dad", "grill master", "dad jokes", "papa bear"] },
+  { name: "4th of July", date: "2026-07-04", topNiches: ["4th of july shirt", "patriotic mom", "american flag", "freedom shirt", "stars stripes"] },
+  { name: "Back to School", date: "2026-08-15", topNiches: ["teacher gift", "first day of school", "kindergarten teacher", "back to school mug", "student life"] },
+  { name: "Halloween", date: "2026-10-31", topNiches: ["halloween cat shirt", "spooky season", "witch vibes", "halloween teacher", "skeleton mom"] },
+  { name: "Thanksgiving", date: "2026-11-26", topNiches: ["thanksgiving turkey", "grateful shirt", "family thanksgiving", "thanksgiving mug", "fall vibes"] },
+  { name: "Black Friday", date: "2026-11-27", topNiches: ["black friday shirt", "shopping queen", "cyber monday", "deal hunter", "shopping mom"] },
+  { name: "Christmas", date: "2026-12-25", topNiches: ["christmas funny shirt", "ugly sweater", "christmas mug", "stocking stuffer", "santa vibes"] },
 ];
 
-const MONTHS_LIST = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+function daysUntil(dateStr: string): number {
+  const target = new Date(dateStr);
+  const today = new Date();
+  const diff = target.getTime() - today.getTime();
+  return Math.ceil(diff / (1000 * 60 * 60 * 24));
+}
+
+function getUrgencyLabel(days: number) {
+  if (days < 0) return { label: "Already passed", color: "#475569", bg: "rgba(255,255,255,0.05)", border: "rgba(255,255,255,0.07)" };
+  if (days <= 21) return { label: "🔴 CRITICAL", color: "#f87171", bg: "rgba(248,113,113,0.08)", border: "rgba(248,113,113,0.25)" };
+  if (days <= 56) return { label: "⚠️ Urgent", color: "#fbbf24", bg: "rgba(251,191,36,0.08)", border: "rgba(251,191,36,0.25)" };
+  if (days <= 84) return { label: "🟡 Upload now", color: "#fb923c", bg: "rgba(251,146,60,0.08)", border: "rgba(251,146,60,0.25)" };
+  return { label: "✅ Plenty of time", color: "#34d399", bg: "rgba(52,211,153,0.08)", border: "rgba(52,211,153,0.25)" };
+}
+
+// Get next 4 upcoming events
+function getUpcomingEvents() {
+  return EVENTS_2026
+    .map(e => ({ ...e, days: daysUntil(e.date) }))
+    .filter(e => e.days >= 0)
+    .sort((a, b) => a.days - b.days)
+    .slice(0, 4);
+}
+
+const HOT_NICHES = [
+  { niche: "ICU Nurse Mom", saturation: 8, trend: "↑ Rising", opportunity: "Excellent", sales: "320/mo", why: "Healthcare workers are loyal buyers + Mother's Day boost" },
+  { niche: "Golden Retriever Dad", saturation: 12, trend: "↑ Rising", opportunity: "Excellent", sales: "280/mo", why: "Pet dad niche is exploding — Father's Day prep" },
+  { niche: "Halloween Teacher", saturation: 18, trend: "↑ Seasonal", opportunity: "Hot", sales: "890/mo", why: "Teachers + Halloween combo is goldmine in Q3" },
+  { niche: "Retired Nurse Life", saturation: 14, trend: "↑ Rising", opportunity: "Excellent", sales: "210/mo", why: "Niche audience, low comp, high prices" },
+  { niche: "Book Lover Witch", saturation: 9, trend: "↑ Trending", opportunity: "Hot", sales: "340/mo", why: "Bookstagram + dark academia trend" },
+  { niche: "Plant Mom Vintage", saturation: 11, trend: "↑ Rising", opportunity: "Excellent", sales: "190/mo", why: "Plant parents are growing demographic" },
+  { niche: "Cat Dad Gamer", saturation: 6, trend: "↑ Rising", opportunity: "Hot", sales: "150/mo", why: "Triple niche = ultra low comp" },
+  { niche: "Dog Mom Yoga", saturation: 15, trend: "↑ Rising", opportunity: "Excellent", sales: "260/mo", why: "Wellness + pet niche overlap" },
+  { niche: "Funny Pharmacist", saturation: 7, trend: "↑ Rising", opportunity: "Hot", sales: "180/mo", why: "Profession-specific = loyal buyers" },
+  { niche: "Camping Dad Joke", saturation: 10, trend: "→ Stable", opportunity: "Good", sales: "220/mo", why: "Father's Day + summer outdoor combo" },
+  { niche: "Nurse Christmas", saturation: 22, trend: "↑ Seasonal", opportunity: "Good", sales: "1200/mo", why: "Healthcare + holiday = massive Q4 sales" },
+  { niche: "Teacher Halloween", saturation: 19, trend: "↑ Seasonal", opportunity: "Good", sales: "760/mo", why: "Educators love seasonal merch" },
+];
 
 export default function PODPage() {
   const router = useRouter();
@@ -54,7 +79,7 @@ export default function PODPage() {
   const [profitResult, setProfitResult] = useState<any>(null);
 
   const nav = [
-    { label: "Keyword Research", path: "/dashboard", emoji: "🔍" },
+    { label: "POD Decision", path: "/dashboard", emoji: "🎯" },
     { label: "Competition", path: "/competition", emoji: "📊" },
     { label: "Trends", path: "/trends", emoji: "📈" },
     { label: "Tag Generator", path: "/tags", emoji: "🏷️" },
@@ -64,7 +89,7 @@ export default function PODPage() {
   ];
 
   const currentMonth = new Date().toLocaleString("en-US", { month: "long" });
-  const calendarData = CALENDAR[currentMonth] || CALENDAR["January"];
+  const upcomingEvents = getUpcomingEvents();
 
   const handleCombo = () => {
     if (!comboA) return;
@@ -83,10 +108,10 @@ export default function PODPage() {
 
   const handleProfit = () => {
     const printCost = PRINTIFY_COSTS[product] || 10;
-    const etsyFee = sellPrice * 0.065 + 0.20;
+    const platformFee = sellPrice * 0.065 + 0.20;
     const paymentFee = sellPrice * 0.03 + 0.25;
-    const netProfit = sellPrice - printCost - etsyFee - paymentFee;
-    setProfitResult({ printCost, etsyFee: etsyFee.toFixed(2), paymentFee: paymentFee.toFixed(2), netProfit: netProfit.toFixed(2), margin: ((netProfit / sellPrice) * 100).toFixed(1) });
+    const netProfit = sellPrice - printCost - platformFee - paymentFee;
+    setProfitResult({ printCost, platformFee: platformFee.toFixed(2), paymentFee: paymentFee.toFixed(2), netProfit: netProfit.toFixed(2), margin: ((netProfit / sellPrice) * 100).toFixed(1) });
   };
 
   const tabs = [
@@ -102,7 +127,7 @@ export default function PODPage() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         .rk { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: #0f1623; color: #cbd5e1; min-height: 100vh; display: flex; }
         .rk-side { width: 228px; background: #111827; border-right: 1px solid rgba(255,255,255,0.07); display: flex; flex-direction: column; flex-shrink: 0; padding: 24px 14px 20px; }
         .rk-logo { font-size: 18px; font-weight: 700; color: #f8fafc; letter-spacing: -0.03em; padding: 0 6px; margin-bottom: 8px; }
@@ -139,14 +164,31 @@ export default function PODPage() {
         .rk-grid4 { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; }
         .rk-niche-card { background: #1e293b; border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 16px; transition: border-color 0.15s; }
         .rk-niche-card:hover { border-color: rgba(129,140,248,0.25); }
-        .rk-cal-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 8px; margin-top: 20px; }
-        .rk-cal-item { border-radius: 10px; padding: 10px 12px; border: 1px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.02); }
         .rk-input { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 10px 14px; color: #e2e8f0; font-size: 14px; outline: none; font-family: inherit; width: 120px; }
         .rk-btn { background: #6366f1; color: #fff; border: none; border-radius: 10px; padding: 10px 20px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.15s; }
         .rk-btn:hover { background: #4f46e5; }
+        
+        /* EVENT CARDS */
+        .rk-event { border-radius: 16px; padding: 22px 24px; border: 2px solid; transition: all 0.15s; }
+        .rk-event-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; gap: 12px; }
+        .rk-event-name { font-size: 17px; font-weight: 800; letter-spacing: -0.02em; }
+        .rk-event-date { font-size: 12px; color: #64748b; margin-top: 4px; }
+        .rk-event-countdown { padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 0.05em; flex-shrink: 0; }
+        .rk-event-days { font-size: 36px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; }
+        .rk-event-days-label { font-size: 11px; color: #64748b; margin-top: 4px; }
+        .rk-event-info { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .rk-event-niches-title { font-size: 10px; font-weight: 700; color: #475569; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
+        .rk-event-niches { display: flex; flex-direction: column; gap: 6px; }
+        .rk-event-niche { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; font-size: 12px; color: #cbd5e1; cursor: pointer; transition: all 0.12s; }
+        .rk-event-niche:hover { background: rgba(99,102,241,0.08); border-color: rgba(99,102,241,0.2); color: #a5b4fc; }
+        .rk-event-rank { font-size: 11px; font-weight: 700; color: #475569; min-width: 18px; }
+        
         .rk-fade { animation: rkfade 0.35s ease; }
         @keyframes rkfade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
         @keyframes dpulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+        @media (max-width: 900px) {
+          .rk-grid4 { grid-template-columns: repeat(2, 1fr); }
+        }
       `}</style>
 
       <div className="rk">
@@ -171,11 +213,11 @@ export default function PODPage() {
 
         <div className="rk-main">
           <div className="rk-topbar">
-            <span style={{ fontSize: 12, color: "#334155" }}>POD Research Hub · The only tool built for serious Etsy sellers</span>
+            <span style={{ fontSize: 12, color: "#334155" }}>POD Research Hub · Built for serious POD sellers</span>
           </div>
           <div className="rk-content">
             <div className="rk-title">🎨 POD Research Hub</div>
-            <div className="rk-sub">Niches · Profit · Timing — everything you need to win on Etsy</div>
+            <div className="rk-sub">Niches · Profit · Timing — everything you need to win on Etsy, Redbubble, TeePublic & Amazon Merch.</div>
 
             <div className="rk-tabs">
               {tabs.map(tab => (
@@ -187,38 +229,53 @@ export default function PODPage() {
             </div>
 
             {activeTab === "calendar" && (
-              <div>
+              <div className="rk-fade">
                 <div style={{ background: "rgba(251,146,60,0.06)", border: "1px solid rgba(251,146,60,0.15)", borderRadius: 14, padding: "16px 22px", marginBottom: 20 }}>
-                  <div style={{ fontWeight: 700, color: "#fb923c", marginBottom: 4, fontSize: 14 }}>📅 It's {currentMonth} — upload these NOW</div>
-                  <div style={{ fontSize: 13, color: "#64748b" }}>Etsy listings need 6-10 weeks to rank. Upload today to sell at peak season.</div>
+                  <div style={{ fontWeight: 700, color: "#fb923c", marginBottom: 4, fontSize: 14 }}>📅 Live countdown — upload now to rank in time</div>
+                  <div style={{ fontSize: 13, color: "#64748b" }}>POD platforms need 6-10 weeks to rank new listings. Critical events highlighted in red.</div>
                 </div>
+                
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0,1fr))", gap: 14, marginBottom: 24 }}>
-                  {calendarData.map((item: any, i: number) => (
-                    <div key={i} className="rk-card">
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                        <div style={{ fontSize: 15, fontWeight: 700, color: "#f1f5f9" }}>{item.niche}</div>
-                        <span style={{ fontSize: 12, fontWeight: 600 }}>{item.urgency}</span>
-                      </div>
-                      <div style={{ fontSize: 13, color: "#64748b" }}>{item.tip}</div>
-                    </div>
-                  ))}
-                </div>
-                <div className="rk-card">
-                  <div className="rk-card-title">Full Year Strategy</div>
-                  <div className="rk-cal-grid">
-                    {MONTHS_LIST.map((month, i) => {
-                      const items = CALENDAR[month] || [];
-                      const isCurrent = month === currentMonth;
-                      return (
-                        <div key={month} className="rk-cal-item" style={isCurrent ? { background: "rgba(99,102,241,0.1)", borderColor: "rgba(99,102,241,0.3)" } : {}}>
-                          <div style={{ fontSize: 11, fontWeight: 600, color: isCurrent ? "#a5b4fc" : "#475569", marginBottom: 4 }}>{month.slice(0, 3)}</div>
-                          {items.map((item: any, j: number) => (
-                            <div key={j} style={{ fontSize: 10, color: "#334155" }}>• {item.niche}</div>
+                  {upcomingEvents.map((event: any, i: number) => {
+                    const urg = getUrgencyLabel(event.days);
+                    const date = new Date(event.date);
+                    const dateStr = date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+                    return (
+                      <div key={i} className="rk-event" style={{ background: urg.bg, borderColor: urg.border }}>
+                        <div className="rk-event-header">
+                          <div>
+                            <div className="rk-event-name" style={{ color: urg.color }}>{event.name}</div>
+                            <div className="rk-event-date">{dateStr}</div>
+                          </div>
+                          <span className="rk-event-countdown" style={{ background: urg.border, color: urg.color }}>{urg.label}</span>
+                        </div>
+                        
+                        <div className="rk-event-info">
+                          <div>
+                            <div className="rk-event-days" style={{ color: urg.color }}>{event.days}</div>
+                            <div className="rk-event-days-label">days remaining</div>
+                          </div>
+                          <div style={{ textAlign: "right" }}>
+                            <div style={{ fontSize: 11, color: "#64748b", marginBottom: 4 }}>Etsy ranking lag:</div>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: event.days < 56 ? "#f87171" : "#34d399" }}>
+                              {event.days < 56 ? "⚠️ Rush mode" : "✅ Safe window"}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="rk-event-niches-title">🎯 Top 5 Niches to Launch</div>
+                        <div className="rk-event-niches">
+                          {event.topNiches.map((niche: string, j: number) => (
+                            <div key={j} className="rk-event-niche" onClick={() => router.push(`/competition?q=${encodeURIComponent(niche)}`)}>
+                              <span className="rk-event-rank">#{j + 1}</span>
+                              <span style={{ flex: 1 }}>{niche}</span>
+                              <span style={{ fontSize: 11, color: "#475569" }}>→</span>
+                            </div>
                           ))}
                         </div>
-                      );
-                    })}
-                  </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -306,7 +363,7 @@ export default function PODPage() {
                     {[
                       { label: "Selling price", value: `$${sellPrice}`, color: "#e2e8f0" },
                       { label: `Printify cost (${product})`, value: `-$${profitResult.printCost}`, color: "#f87171" },
-                      { label: "Etsy fee (6.5%)", value: `-$${profitResult.etsyFee}`, color: "#f87171" },
+                      { label: "Platform fee (6.5%)", value: `-$${profitResult.platformFee}`, color: "#f87171" },
                       { label: "Payment fee (3%)", value: `-$${profitResult.paymentFee}`, color: "#f87171" },
                     ].map((row, i) => (
                       <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
@@ -329,18 +386,18 @@ export default function PODPage() {
             )}
 
             {activeTab === "niches" && (
-              <div>
+              <div className="rk-fade">
                 <div style={{ background: "rgba(251,146,60,0.06)", border: "1px solid rgba(251,146,60,0.15)", borderRadius: 14, padding: "14px 20px", marginBottom: 20 }}>
                   <div style={{ fontWeight: 700, color: "#fb923c", fontSize: 13 }}>🔥 Hand-picked micro-niches with low competition — updated for {currentMonth}</div>
                 </div>
                 <div className="rk-grid4" style={{ gap: 14 }}>
                   {HOT_NICHES.map((item, i) => (
                     <div key={i} className="rk-niche-card">
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
                         <div style={{ fontSize: 13, fontWeight: 700, color: "#f1f5f9" }}>{item.niche}</div>
                         <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: item.saturation < 10 ? "rgba(52,211,153,0.1)" : "rgba(251,191,36,0.1)", color: item.saturation < 10 ? "#34d399" : "#fbbf24" }}>{item.opportunity}</span>
                       </div>
-                      <div style={{ marginBottom: 8 }}>
+                      <div style={{ marginBottom: 10 }}>
                         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, marginBottom: 4 }}>
                           <span style={{ color: "#475569" }}>Saturation</span>
                           <span style={{ color: satColor(item.saturation), fontWeight: 600 }}>{item.saturation}/100</span>
@@ -349,13 +406,16 @@ export default function PODPage() {
                           <div style={{ width: `${item.saturation}%`, height: 4, borderRadius: 99, background: satColor(item.saturation) }} />
                         </div>
                       </div>
-                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, marginBottom: 4 }}>
                         <span style={{ color: "#475569" }}>Est. sales</span>
                         <span style={{ color: "#e2e8f0", fontWeight: 600 }}>{item.sales}</span>
                       </div>
-                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, marginTop: 4 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, marginBottom: 10 }}>
                         <span style={{ color: "#475569" }}>Trend</span>
                         <span style={{ color: item.trend.startsWith("↑") ? "#34d399" : "#fbbf24", fontWeight: 600 }}>{item.trend}</span>
+                      </div>
+                      <div style={{ fontSize: 10, color: "#64748b", lineHeight: 1.4, padding: "8px 10px", background: "rgba(99,102,241,0.05)", borderRadius: 8, borderLeft: "2px solid rgba(99,102,241,0.3)" }}>
+                        💡 {item.why}
                       </div>
                     </div>
                   ))}
