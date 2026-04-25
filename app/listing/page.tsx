@@ -2,6 +2,74 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+// ============================================
+// DYNAMIC SUGGESTIONS
+// ============================================
+function getDynamicSuggestions(): string[] {
+  const month = new Date().getMonth() + 1;
+  const seasonal: Record<number, string[]> = {
+    1: ["valentines mug", "winter cozy", "new year"],
+    2: ["valentines gift", "galentines", "spring"],
+    3: ["st patricks", "spring vibes", "easter mom"],
+    4: ["mothers day", "graduation", "easter"],
+    5: ["mothers day mug", "fathers day", "teacher"],
+    6: ["fathers day", "summer", "pride"],
+    7: ["4th of july", "summer beach", "patriotic"],
+    8: ["back to school", "teacher gift", "halloween"],
+    9: ["halloween", "fall vibes", "pumpkin"],
+    10: ["halloween shirt", "spooky", "fall aesthetic"],
+    11: ["thanksgiving", "christmas", "black friday"],
+    12: ["christmas gift", "holiday mug", "stocking"],
+  };
+  const trending = ["matcha lover", "boy mom era", "plant mom"];
+  return [...(seasonal[month] || []), ...trending].slice(0, 8);
+}
+
+// ============================================
+// SEO SCORE BREAKDOWN - what's missing/good
+// ============================================
+function getScoreBreakdown(result: any) {
+  if (!result) return [];
+  const items = [];
+  
+  // Title length check
+  const titleLen = result.title?.length || 0;
+  if (titleLen >= 100 && titleLen <= 140) {
+    items.push({ pass: true, text: `Title length optimal (${titleLen}/140 chars)` });
+  } else if (titleLen < 100) {
+    items.push({ pass: false, text: `Title too short (${titleLen} chars) — aim for 100-140 to maximize SEO` });
+  } else {
+    items.push({ pass: false, text: `Title too long (${titleLen} chars) — keep under 140` });
+  }
+  
+  // Keywords count
+  const tagCount = result.tags?.length || 0;
+  if (tagCount >= 13) {
+    items.push({ pass: true, text: `All 13 tag slots used (max SEO juice)` });
+  } else {
+    items.push({ pass: false, text: `Only ${tagCount}/13 tags — add more for better visibility` });
+  }
+  
+  // Description length
+  const descLen = result.description?.length || 0;
+  if (descLen >= 500) {
+    items.push({ pass: true, text: `Description has good depth (${descLen} chars)` });
+  } else {
+    items.push({ pass: false, text: `Description too thin (${descLen} chars) — Etsy favors detailed listings` });
+  }
+  
+  // Competition
+  if (result.competition === "Low") {
+    items.push({ pass: true, text: `Low competition niche — easy to rank` });
+  } else if (result.competition === "Medium") {
+    items.push({ pass: true, text: `Medium competition — workable with strong SEO` });
+  } else {
+    items.push({ pass: false, text: `High competition — focus on long-tail variants & personalization` });
+  }
+  
+  return items;
+}
+
 export default function ListingOptimizer() {
   const router = useRouter();
   const [query, setQuery] = useState("");
@@ -10,7 +78,7 @@ export default function ListingOptimizer() {
   const [copied, setCopied] = useState<string | null>(null);
 
   const nav = [
-    { label: "Keyword Research", path: "/dashboard", emoji: "🔍" },
+    { label: "POD Decision", path: "/dashboard", emoji: "🎯" },
     { label: "Competition", path: "/competition", emoji: "📊" },
     { label: "Trends", path: "/trends", emoji: "📈" },
     { label: "Tag Generator", path: "/tags", emoji: "🏷️" },
@@ -19,21 +87,23 @@ export default function ListingOptimizer() {
     { label: "POD Research", path: "/pod", emoji: "🎨", badge: "NEW" },
   ];
 
-  const suggestions = ["candle", "jewelry", "mug", "tshirt", "wedding", "baby", "hoodie", "poster"];
+  const suggestions = getDynamicSuggestions();
 
-  async function handleOptimize() {
-    if (!query.trim()) return;
+  async function handleOptimize(kw?: string) {
+    const q = kw || query;
+    if (!q.trim()) return;
+    setQuery(q);
     setLoading(true); setResult(null);
     try {
       const res = await fetch("/api/keywords", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ keyword: query.trim().toLowerCase() }),
+        body: JSON.stringify({ keyword: q.trim().toLowerCase() }),
       });
       const data = await res.json();
       if (!data.error && data.related?.length) {
         const topKeywords = data.related.sort((a: any, b: any) => parseInt(b.vol) - parseInt(a.vol)).slice(0, 13).map((k: any) => k.kw);
-        const mainKw = query.trim();
+        const mainKw = q.trim();
         const title = generateTitle(mainKw, topKeywords);
         const description = generateDescription(mainKw, topKeywords);
         const tags = generateTags(mainKw, topKeywords);
@@ -81,6 +151,7 @@ export default function ListingOptimizer() {
 
   const scoreColor = result?.score >= 80 ? "#34d399" : result?.score >= 60 ? "#fbbf24" : "#f87171";
   const compColor = (c: string) => c === "Low" ? "#34d399" : c === "Medium" ? "#fbbf24" : "#f87171";
+  const breakdown = result && !result.error ? getScoreBreakdown(result) : [];
 
   return (
     <>
@@ -121,6 +192,13 @@ export default function ListingOptimizer() {
         .rk-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 220px; gap: 16px; }
         .rk-spinner { width: 36px; height: 36px; border: 3px solid rgba(99,102,241,0.2); border-top-color: #6366f1; border-radius: 50%; animation: spin 0.8s linear infinite; }
         .rk-fade { animation: rkfade 0.35s ease; }
+        
+        /* SCORE BREAKDOWN */
+        .rk-breakdown-item { display: flex; gap: 10px; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+        .rk-breakdown-item:last-child { border-bottom: none; }
+        .rk-breakdown-icon { font-size: 14px; flex-shrink: 0; line-height: 1.4; }
+        .rk-breakdown-text { font-size: 13px; line-height: 1.5; }
+        
         @keyframes rkfade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
         @keyframes dpulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
         @keyframes spin { to{transform:rotate(360deg)} }
@@ -152,13 +230,13 @@ export default function ListingOptimizer() {
           </div>
           <div className="rk-content">
             <div className="rk-title">⭐ Listing Optimizer</div>
-            <div className="rk-sub">Generate SEO-optimized title, description and tags for your Etsy listing</div>
+            <div className="rk-sub">Generate SEO-optimized title, description and tags — works for Etsy, Redbubble, TeePublic, Amazon Merch.</div>
 
             <div className="rk-search-row">
               <input className="rk-input" value={query} onChange={e => setQuery(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && handleOptimize()}
-                placeholder='Enter your product, e.g. "candle", "mug", "wedding gift"' />
-              <button className="rk-btn" onClick={handleOptimize} disabled={loading}>
+                placeholder='Enter your product, e.g. "matcha mug", "halloween shirt", "boy mom era"' />
+              <button className="rk-btn" onClick={() => handleOptimize()} disabled={loading}>
                 {loading ? "Optimizing..." : "✨ Optimize →"}
               </button>
             </div>
@@ -166,7 +244,7 @@ export default function ListingOptimizer() {
             {!result && !loading && (
               <div className="rk-chips">
                 {suggestions.map(s => (
-                  <button key={s} className="rk-chip" onClick={() => setQuery(s)}>{s}</button>
+                  <button key={s} className="rk-chip" onClick={() => handleOptimize(s)}>{s}</button>
                 ))}
               </div>
             )}
@@ -204,9 +282,20 @@ export default function ListingOptimizer() {
                   </div>
                 </div>
 
+                {/* SCORE BREAKDOWN */}
+                <div className="rk-card">
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "#a5b4fc", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 14 }}>📋 Score Breakdown</div>
+                  {breakdown.map((item, i) => (
+                    <div key={i} className="rk-breakdown-item">
+                      <span className="rk-breakdown-icon" style={{ color: item.pass ? "#34d399" : "#fbbf24" }}>{item.pass ? "✓" : "⚠"}</span>
+                      <span className="rk-breakdown-text" style={{ color: item.pass ? "#cbd5e1" : "#fbbf24" }}>{item.text}</span>
+                    </div>
+                  ))}
+                </div>
+
                 <div className="rk-card">
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                    <span style={{ fontSize: 11, fontWeight: 600, color: "#475569", letterSpacing: "0.07em", textTransform: "uppercase" }}>Etsy Title</span>
+                    <span style={{ fontSize: 11, fontWeight: 600, color: "#475569", letterSpacing: "0.07em", textTransform: "uppercase" }}>Listing Title</span>
                     <button className="rk-copy-btn" onClick={() => copyToClipboard(result.title, "title")}
                       style={{ background: copied === "title" ? "rgba(52,211,153,0.1)" : "rgba(99,102,241,0.1)", color: copied === "title" ? "#34d399" : "#818cf8" }}>
                       {copied === "title" ? "✓ Copied!" : "Copy"}
@@ -230,7 +319,7 @@ export default function ListingOptimizer() {
 
                 <div className="rk-card">
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-                    <span style={{ fontSize: 11, fontWeight: 600, color: "#475569", letterSpacing: "0.07em", textTransform: "uppercase" }}>Etsy Tags ({result.tags.length}/13)</span>
+                    <span style={{ fontSize: 11, fontWeight: 600, color: "#475569", letterSpacing: "0.07em", textTransform: "uppercase" }}>Tags ({result.tags.length}/13)</span>
                     <button className="rk-copy-btn" onClick={() => copyToClipboard(result.tags.join(", "), "tags")}
                       style={{ background: copied === "tags" ? "rgba(52,211,153,0.1)" : "rgba(99,102,241,0.1)", color: copied === "tags" ? "#34d399" : "#818cf8" }}>
                       {copied === "tags" ? "✓ Copied!" : "Copy All"}
