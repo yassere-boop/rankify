@@ -128,37 +128,37 @@ function getPODVerdict(volume: string, competition: string, trend: string, keywo
 function generateDesignBrief(niche: string, verdictType: string) {
   const n = niche.toLowerCase();
 
-  // ========== CATEGORY DETECTION ==========
-  const isMom = /\b(mom|mother|mama|mum|mommy)\b/.test(n);
-  const isDad = /\b(dad|father|papa|daddy)\b/.test(n);
-  const isGrandma = /\b(grandma|nana|granny|nonna|abuela)\b/.test(n);
-  const isGrandpa = /\b(grandpa|grandad|papaw|opa)\b/.test(n);
-  const isSister = /\b(sister|sis|big sister|little sister)\b/.test(n);
-  const isBrother = /\b(brother|bro|big brother|little brother)\b/.test(n);
-  const isAunt = /\b(aunt|auntie|aunty)\b/.test(n);
-  const isUncle = /\b(uncle|unc)\b/.test(n);
+ // ========== CATEGORY DETECTION ==========
+  const isMom = /\b(mom|moms|mother|mothers|mama|mamas|mum|mummy|mommy)\b/.test(n);
+  const isDad = /\b(dad|dads|father|fathers|papa|daddy)\b/.test(n);
+  const isGrandma = /\b(grandma|grandmas|grandmother|nana|granny|nonna|abuela)\b/.test(n);
+  const isGrandpa = /\b(grandpa|grandpas|grandfather|grandad|papaw|opa)\b/.test(n);
+  const isSister = /\b(sister|sisters|sis)\b/.test(n);
+  const isBrother = /\b(brother|brothers|bro)\b/.test(n);
+  const isAunt = /\b(aunt|aunts|auntie|aunty)\b/.test(n);
+  const isUncle = /\b(uncle|uncles|unc)\b/.test(n);
   
-  const isNurse = /\b(nurse|medical|rn|cna|icu|er nurse|nursing)\b/.test(n);
-  const isDoctor = /\b(doctor|md|physician|surgeon)\b/.test(n);
-  const isTeacher = /\b(teacher|professor|educator|kindergarten|preschool)\b/.test(n);
-  const isLawyer = /\b(lawyer|attorney|esquire|esq|legal)\b/.test(n);
-  const isEngineer = /\b(engineer|developer|programmer|coder|software)\b/.test(n);
-  const isAccountant = /\b(accountant|cpa|finance|bookkeeper)\b/.test(n);
-  const isFirefighter = /\b(firefighter|fireman|fire dept)\b/.test(n);
-  const isPolice = /\b(police|cop|officer|sheriff)\b/.test(n);
-  const isChef = /\b(chef|cook|baker|culinary)\b/.test(n);
-  const isPharmacist = /\b(pharmacist|pharmacy|pharm tech)\b/.test(n);
+  const isNurse = /\b(nurse|nurses|medical|rn|cna|icu|nursing)\b/.test(n);
+  const isDoctor = /\b(doctor|doctors|md|physician|surgeon)\b/.test(n);
+  const isTeacher = /\b(teacher|teachers|professor|educator|kindergarten|preschool)\b/.test(n);
+  const isLawyer = /\b(lawyer|lawyers|attorney|esquire|esq|legal)\b/.test(n);
+  const isEngineer = /\b(engineer|engineers|developer|programmer|coder|software)\b/.test(n);
+  const isAccountant = /\b(accountant|accountants|cpa|finance|bookkeeper)\b/.test(n);
+  const isFirefighter = /\b(firefighter|firefighters|fireman|fire dept)\b/.test(n);
+  const isPolice = /\b(police|cop|cops|officer|sheriff)\b/.test(n);
+  const isChef = /\b(chef|chefs|cook|baker|culinary)\b/.test(n);
+  const isPharmacist = /\b(pharmacist|pharmacists|pharmacy|pharm tech)\b/.test(n);
   
-  const isGrad = /\b(grad|graduation|class of|senior|graduate)\b/.test(n);
-  const isWedding = /\b(wedding|bride|groom|bridesmaid|engagement)\b/.test(n);
-  const isBirthday = /\b(birthday|bday|birth)\b/.test(n);
+  const isGrad = /\b(grad|grads|graduation|class of|senior|graduate)\b/.test(n);
+  const isWedding = /\b(wedding|weddings|bride|groom|bridesmaid|engagement)\b/.test(n);
+  const isBirthday = /\b(birthday|birthdays|bday|birth)\b/.test(n);
   
-  const isDog = /\b(dog|puppy|pup|doggo|golden retriever|labrador|poodle)\b/.test(n);
-  const isCat = /\b(cat|kitten|kitty|feline)\b/.test(n);
-  const isHorse = /\b(horse|equestrian|cowgirl|cowboy)\b/.test(n);
+  const isDog = /\b(dog|dogs|puppy|puppies|pup|doggo|retriever|labrador|poodle)\b/.test(n);
+  const isCat = /\b(cat|cats|kitten|kittens|kitty|feline)\b/.test(n);
+  const isHorse = /\b(horse|horses|equestrian|cowgirl|cowboy)\b/.test(n);
   
-  const isHalloween = /\b(halloween|spooky|witch|ghost|pumpkin|haunted)\b/.test(n);
-  const isChristmas = /\b(christmas|xmas|holiday|santa|noel|elf)\b/.test(n);
+  const isHalloween = /\b(halloween|spooky|witch|witches|ghost|pumpkin|haunted)\b/.test(n);
+  const isChristmas = /\b(christmas|xmas|holiday|holidays|santa|noel|elf)\b/.test(n);
   const isValentine = /\b(valentine|valentines|love day|romantic)\b/.test(n);
   const isThanksgiving = /\b(thanksgiving|turkey|grateful|harvest)\b/.test(n);
   const isStPatrick = /\b(st patrick|saint patrick|shamrock|irish)\b/.test(n);
@@ -168,24 +168,24 @@ function generateDesignBrief(niche: string, verdictType: string) {
   
   const isCoffee = /\b(coffee|caffeine|espresso|latte|barista)\b/.test(n);
   const isMatcha = /\b(matcha|green tea|tea lover)\b/.test(n);
-  const isWine = /\b(wine|vino|sommelier|wino)\b/.test(n);
+  const isWine = /\b(wine|wines|vino|sommelier|wino)\b/.test(n);
   
   const isGym = /\b(gym|fitness|workout|lift|squat|crossfit|yoga|pilates)\b/.test(n);
-  const isRunner = /\b(runner|running|marathon|5k|10k)\b/.test(n);
+  const isRunner = /\b(runner|runners|running|marathon|5k|10k)\b/.test(n);
   
-  const isBook = /\b(book|reading|reader|library|bookworm|bibliophile)\b/.test(n);
-  const isPlant = /\b(plant|floral|garden|botanical|succulent)\b/.test(n);
+  const isBook = /\b(book|books|reading|reader|library|bookworm|bibliophile)\b/.test(n);
+  const isPlant = /\b(plant|plants|floral|garden|botanical|succulent)\b/.test(n);
   const isCrochet = /\b(crochet|knit|knitting|yarn|crocheter)\b/.test(n);
-  const isArt = /\b(artist|art|painter|painting|drawing|illustration)\b/.test(n);
-  const isPhoto = /\b(photographer|photography|camera|lens)\b/.test(n);
+  const isArt = /\b(artist|artists|art|painter|painting|drawing|illustration)\b/.test(n);
+  const isPhoto = /\b(photographer|photographers|photography|camera|lens)\b/.test(n);
   const isMusic = /\b(music|musician|guitar|piano|drummer|singer|band)\b/.test(n);
-  const isGamer = /\b(gamer|gaming|video game|xbox|playstation|nintendo|streamer)\b/.test(n);
+  const isGamer = /\b(gamer|gamers|gaming|video game|xbox|playstation|nintendo|streamer)\b/.test(n);
   
   // FANDOM
-  const isSwiftie = /\b(taylor swift|swiftie|eras tour)\b/.test(n);
+  const isSwiftie = /\b(taylor swift|swiftie|swifties|eras tour)\b/.test(n);
   const isKpop = /\b(kpop|k-pop|bts|blackpink|stray kids)\b/.test(n);
   const isHarryPotter = /\b(harry potter|hogwarts|wizard|gryffindor|slytherin)\b/.test(n);
-  const isMarvel = /\b(marvel|avenger|spiderman|iron man)\b/.test(n);
+  const isMarvel = /\b(marvel|avenger|avengers|spiderman|iron man)\b/.test(n);
   const isAnime = /\b(anime|manga|otaku|naruto|dragon ball)\b/.test(n);
   const isDisney = /\b(disney|princess|mickey|minnie)\b/.test(n);
   
