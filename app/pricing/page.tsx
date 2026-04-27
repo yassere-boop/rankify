@@ -3,54 +3,44 @@ import Link from "next/link";
 const plans = [
   {
     name: "Starter",
+    tagline: "For sellers testing the waters",
     price: "$19",
     period: "/month",
-    searches: "100 searches/month",
+    searches: "100 decisions per month",
     highlight: false,
     link: "https://markearn.lemonsqueezy.com/checkout/buy/c6882729-f43c-4455-a9be-f9df7199b648",
+    description: "Perfect if you're starting out and want clarity before designing.",
     features: [
-      "100 searches/month",
-      "POD Decision tool",
-      "Keyword Research",
-      "Tag Generator",
-      "POD Research Hub",
-      "Trend Analyzer",
+      "100 niche decisions per month",
+      "GO / POSSIBLE / AVOID verdict",
+      "POD Score 0-100",
+      "Strategy tips per niche",
+      "Trend analyzer",
+      "Tag generator (13 tags)",
       "1-day free trial",
     ],
   },
   {
     name: "Pro",
+    tagline: "For serious POD sellers",
     price: "$39",
     period: "/month",
-    searches: "500 searches/month",
+    searches: "500 decisions per month",
     highlight: true,
     link: "https://markearn.lemonsqueezy.com/checkout/buy/2f0e0ecc-963d-4241-8105-9571bc559365",
+    description: "Everything in Starter, plus the tools that turn decisions into designs.",
     features: [
-      "500 searches/month",
+      "500 niche decisions per month",
       "Everything in Starter",
-      "✏️ What to design/avoid",
-      "POD Verdict detailed",
+      "✏️ What to design / What to avoid",
+      "🎨 Smart Design Brief (Midjourney prompts)",
+      "Better alternatives when saturated",
       "Exact competition scores",
       "All 10 related keywords",
+      "Listing Optimizer",
+      "Sales Estimator",
+      "POD Research Hub",
       "Priority support",
-      "1-day free trial",
-    ],
-  },
-  {
-    name: "Agency",
-    price: "$79",
-    period: "/month",
-    searches: "Unlimited searches",
-    highlight: false,
-    link: "https://markearn.lemonsqueezy.com/checkout/buy/4828262b-b483-400c-8a2c-797870523490",
-    features: [
-      "Unlimited searches",
-      "Everything in Pro",
-      "Up to 10 Etsy stores",
-      "Multi-store dashboard",
-      "Consolidated analytics",
-      "Priority support",
-      "1-day free trial",
     ],
   },
 ];
@@ -61,6 +51,7 @@ export default function Pricing() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         .pr { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
       `}</style>
 
       <div className="pr">
@@ -82,42 +73,52 @@ export default function Pricing() {
           <div className="inline-flex items-center gap-2 mb-8 px-5 py-2 rounded-full"
             style={{ background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.25)", fontSize: 13, color: "#a5b4fc" }}>
             <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#34d399", display: "inline-block", animation: "pulse 2s infinite" }} />
-            1-day free trial — no credit card required
+            1-day free trial · No credit card required
           </div>
 
-          <h1 style={{ fontSize: 40, fontWeight: 800, color: "#f1f5f9", letterSpacing: "-0.025em", marginBottom: 12 }}>
-            Simple, transparent pricing
+          <h1 style={{ fontSize: 42, fontWeight: 800, color: "#f1f5f9", letterSpacing: "-0.025em", marginBottom: 14, maxWidth: 640, margin: "0 auto 14px" }}>
+            Pick the plan that fits your stage.
           </h1>
-          <p style={{ fontSize: 16, color: "#475569", marginBottom: 60 }}>
-            Try free for 24 hours. No credit card required. Cancel anytime.
+          <p style={{ fontSize: 17, color: "#94a3b8", marginBottom: 60, maxWidth: 540, margin: "0 auto", lineHeight: 1.7 }}>
+            Both plans include the GO / AVOID verdict system. Pro adds the tools you need to turn decisions into bestselling designs.
           </p>
 
-          <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 px-6">
+          {/* PRICING CARDS */}
+          <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 px-6">
             {plans.map((plan) => (
               <div key={plan.name} style={{
                 background: plan.highlight ? "rgba(99,102,241,0.08)" : "rgba(255,255,255,0.03)",
                 border: plan.highlight ? "2px solid rgba(99,102,241,0.4)" : "1px solid rgba(255,255,255,0.07)",
-                borderRadius: 20, padding: "32px 28px", position: "relative", transition: "all 0.15s"
+                borderRadius: 20,
+                padding: "36px 32px",
+                position: "relative",
+                transition: "all 0.15s",
+                textAlign: "left"
               }}>
                 {plan.highlight && (
-                  <div style={{ position: "absolute", top: -14, left: "50%", transform: "translateX(-50%)", background: "#6366f1", color: "#fff", fontSize: 11, fontWeight: 700, padding: "4px 16px", borderRadius: 20, whiteSpace: "nowrap" }}>
-                    Most Popular
+                  <div style={{ position: "absolute", top: -14, left: "50%", transform: "translateX(-50%)", background: "#6366f1", color: "#fff", fontSize: 11, fontWeight: 700, padding: "5px 18px", borderRadius: 20, whiteSpace: "nowrap", letterSpacing: "0.05em" }}>
+                    MOST POPULAR
                   </div>
                 )}
 
                 <div style={{ marginBottom: 24 }}>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: "#475569", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.07em" }}>{plan.name}</p>
-                  <div style={{ display: "flex", alignItems: "flex-end", gap: 4, marginBottom: 4 }}>
-                    <span style={{ fontSize: 40, fontWeight: 800, color: "#f1f5f9", letterSpacing: "-0.02em" }}>{plan.price}</span>
+                  <p style={{ fontSize: 14, fontWeight: 700, color: plan.highlight ? "#a5b4fc" : "#94a3b8", marginBottom: 6, letterSpacing: "0.07em", textTransform: "uppercase" }}>{plan.name}</p>
+                  <p style={{ fontSize: 13, color: "#64748b", marginBottom: 16 }}>{plan.tagline}</p>
+                  <div style={{ display: "flex", alignItems: "flex-end", gap: 4, marginBottom: 6 }}>
+                    <span style={{ fontSize: 48, fontWeight: 800, color: "#f1f5f9", letterSpacing: "-0.03em", lineHeight: 1 }}>{plan.price}</span>
                     <span style={{ fontSize: 14, color: "#475569", marginBottom: 8 }}>{plan.period}</span>
                   </div>
-                  <p style={{ fontSize: 12, color: "#334155" }}>{plan.searches}</p>
+                  <p style={{ fontSize: 13, color: "#64748b", marginBottom: 4 }}>{plan.searches}</p>
                 </div>
 
-                <ul style={{ marginBottom: 28, display: "flex", flexDirection: "column", gap: 10 }}>
+                <p style={{ fontSize: 13, color: "#cbd5e1", marginBottom: 24, lineHeight: 1.6, padding: "12px 14px", background: "rgba(255,255,255,0.03)", borderRadius: 8, border: "1px solid rgba(255,255,255,0.05)" }}>
+                  {plan.description}
+                </p>
+
+                <ul style={{ marginBottom: 30, display: "flex", flexDirection: "column", gap: 10 }}>
                   {plan.features.map((f) => (
-                    <li key={f} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 13, color: "#94a3b8" }}>
-                      <span style={{ color: "#6366f1", flexShrink: 0, marginTop: 1 }}>✓</span>
+                    <li key={f} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 13, color: "#cbd5e1" }}>
+                      <span style={{ color: plan.highlight ? "#a5b4fc" : "#6366f1", flexShrink: 0, marginTop: 1, fontWeight: 700 }}>✓</span>
                       {f}
                     </li>
                   ))}
@@ -125,7 +126,7 @@ export default function Pricing() {
 
                 <a href={plan.link} target="_blank" rel="noopener noreferrer"
                   style={{
-                    display: "block", textAlign: "center", padding: "13px 20px", borderRadius: 12,
+                    display: "block", textAlign: "center", padding: "14px 20px", borderRadius: 12,
                     background: plan.highlight ? "#6366f1" : "rgba(99,102,241,0.1)",
                     color: plan.highlight ? "#fff" : "#818cf8",
                     border: plan.highlight ? "none" : "1px solid rgba(99,102,241,0.2)",
@@ -138,14 +139,35 @@ export default function Pricing() {
             ))}
           </div>
 
-          <div className="max-w-xl mx-auto mt-12" style={{ background: "rgba(99,102,241,0.05)", border: "1px solid rgba(99,102,241,0.15)", borderRadius: 16, padding: "20px 24px" }}>
-            <p style={{ fontSize: 14, fontWeight: 600, color: "#f1f5f9", marginBottom: 4 }}>🎯 Not sure which plan?</p>
-            <p style={{ fontSize: 13, color: "#475569" }}>Start with the 1-day free trial — no card needed. Most sellers go Pro after seeing the POD Verdict in action.</p>
+          {/* SOCIAL PROOF / WHY UPGRADE */}
+          <div className="max-w-2xl mx-auto mt-16" style={{ background: "rgba(99,102,241,0.05)", border: "1px solid rgba(99,102,241,0.15)", borderRadius: 16, padding: "24px 28px", textAlign: "left" }}>
+            <p style={{ fontSize: 14, fontWeight: 700, color: "#a5b4fc", marginBottom: 8, letterSpacing: "0.05em" }}>💡 Why most sellers go Pro</p>
+            <p style={{ fontSize: 14, color: "#cbd5e1", lineHeight: 1.7 }}>
+              The verdict tells you <strong style={{ color: "#34d399" }}>if</strong> a niche is worth it. The Pro tools tell you <strong style={{ color: "#a5b4fc" }}>how</strong> to actually win it — what to design, what to avoid, and the exact prompts to use. That's where time saved becomes money earned.
+            </p>
           </div>
 
-          <div className="mt-12">
-            <p style={{ fontSize: 13, color: "#334155" }}>
-              Questions? Contact us at{" "}
+          {/* FAQ */}
+          <div className="max-w-2xl mx-auto mt-16" style={{ textAlign: "left" }}>
+            <h3 style={{ fontSize: 22, fontWeight: 700, color: "#f1f5f9", marginBottom: 24, textAlign: "center" }}>Common Questions</h3>
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              {[
+                { q: "What counts as a 'decision'?", a: "Every time you analyze a niche, that's one decision. You can re-check old searches without using credits." },
+                { q: "Can I switch plans later?", a: "Yes, anytime. Upgrade, downgrade, or cancel from your account settings." },
+                { q: "Do you offer refunds?", a: "If Markearn doesn't help you within the first 7 days, email us. No questions asked." },
+                { q: "Which platforms does it work for?", a: "Etsy, Redbubble, TeePublic, Amazon Merch, and other major POD platforms." },
+              ].map((item, i) => (
+                <div key={i} style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 12, padding: "18px 22px" }}>
+                  <p style={{ fontSize: 14, fontWeight: 700, color: "#f1f5f9", marginBottom: 6 }}>{item.q}</p>
+                  <p style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.6 }}>{item.a}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-16">
+            <p style={{ fontSize: 13, color: "#475569" }}>
+              Questions? Reach us at{" "}
               <a href="mailto:support@markearn.com" style={{ color: "#6366f1" }}>support@markearn.com</a>
             </p>
           </div>
