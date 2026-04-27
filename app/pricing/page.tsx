@@ -8,7 +8,7 @@ const plans = [
     period: "/month",
     searches: "100 decisions per month",
     highlight: false,
-    link: "https://markearn.lemonsqueezy.com/checkout/buy/c6882729-f43c-4455-a9be-f9df7199b648",
+    link: "https://markearn.lemonsqueezy.com/checkout/buy/71b5383a-64f7-4c69-89f6-c983760b36e3",
     description: "Perfect if you're starting out and want clarity before designing.",
     features: [
       "100 niche decisions per month",
@@ -27,7 +27,7 @@ const plans = [
     period: "/month",
     searches: "500 decisions per month",
     highlight: true,
-    link: "https://markearn.lemonsqueezy.com/checkout/buy/2f0e0ecc-963d-4241-8105-9571bc559365",
+    link: "https://markearn.lemonsqueezy.com/checkout/buy/bc3251e7-159c-40f7-875c-876ab776e4ab",
     description: "Everything in Starter, plus the tools that turn decisions into designs.",
     features: [
       "500 niche decisions per month",
