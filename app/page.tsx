@@ -253,7 +253,104 @@ export default function Home() {
             ))}
           </div>
         </section>
+{/* PRICING TEASER */}
+        <section className="relative z-10 px-12 py-24 max-w-5xl mx-auto" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+          <div className="text-center mb-12">
+            <div style={{ fontSize: 12, fontWeight: 700, color: "#a5b4fc", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 12 }}>Simple Pricing</div>
+            <h2 style={{ fontSize: 36, fontWeight: 800, color: "#f1f5f9", letterSpacing: "-0.025em", marginBottom: 14 }}>
+              Two plans. No surprises.
+            </h2>
+            <p style={{ fontSize: 16, color: "#94a3b8" }}>1-day free trial · No credit card required · Cancel anytime</p>
+          </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+            {/* STARTER */}
+            <div style={{
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid rgba(255,255,255,0.07)",
+              borderRadius: 20,
+              padding: "32px 28px",
+              textAlign: "left"
+            }}>
+              <p style={{ fontSize: 13, fontWeight: 700, color: "#94a3b8", marginBottom: 6, letterSpacing: "0.07em", textTransform: "uppercase" }}>Starter</p>
+              <p style={{ fontSize: 12, color: "#64748b", marginBottom: 18 }}>For sellers testing the waters</p>
+              <div style={{ display: "flex", alignItems: "flex-end", gap: 4, marginBottom: 6 }}>
+                <span style={{ fontSize: 44, fontWeight: 800, color: "#f1f5f9", letterSpacing: "-0.03em", lineHeight: 1 }}>$19</span>
+                <span style={{ fontSize: 14, color: "#475569", marginBottom: 6 }}>/month</span>
+              </div>
+              <p style={{ fontSize: 13, color: "#64748b", marginBottom: 22 }}>100 niche decisions per month</p>
+              
+              <ul style={{ marginBottom: 26, display: "flex", flexDirection: "column", gap: 8 }}>
+                {["GO / POSSIBLE / AVOID verdict", "POD Score 0-100", "Strategy tips per niche", "Trend & Tag tools"].map((f) => (
+                  <li key={f} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 13, color: "#cbd5e1" }}>
+                    <span style={{ color: "#6366f1", flexShrink: 0, marginTop: 1, fontWeight: 700 }}>✓</span>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+
+              <Link href="/pricing"
+                style={{
+                  display: "block", textAlign: "center", padding: "12px 20px", borderRadius: 12,
+                  background: "rgba(99,102,241,0.1)",
+                  color: "#818cf8",
+                  border: "1px solid rgba(99,102,241,0.2)",
+                  fontSize: 14, fontWeight: 700, textDecoration: "none"
+                }}>
+                Start with Starter
+              </Link>
+            </div>
+
+            {/* PRO */}
+            <div style={{
+              background: "rgba(99,102,241,0.08)",
+              border: "2px solid rgba(99,102,241,0.4)",
+              borderRadius: 20,
+              padding: "32px 28px",
+              position: "relative",
+              textAlign: "left"
+            }}>
+              <div style={{ position: "absolute", top: -14, left: "50%", transform: "translateX(-50%)", background: "#6366f1", color: "#fff", fontSize: 11, fontWeight: 700, padding: "5px 18px", borderRadius: 20, whiteSpace: "nowrap", letterSpacing: "0.05em" }}>
+                MOST POPULAR
+              </div>
+              
+              <p style={{ fontSize: 13, fontWeight: 700, color: "#a5b4fc", marginBottom: 6, letterSpacing: "0.07em", textTransform: "uppercase" }}>Pro</p>
+              <p style={{ fontSize: 12, color: "#64748b", marginBottom: 18 }}>For serious POD sellers</p>
+              <div style={{ display: "flex", alignItems: "flex-end", gap: 4, marginBottom: 6 }}>
+                <span style={{ fontSize: 44, fontWeight: 800, color: "#f1f5f9", letterSpacing: "-0.03em", lineHeight: 1 }}>$39</span>
+                <span style={{ fontSize: 14, color: "#475569", marginBottom: 6 }}>/month</span>
+              </div>
+              <p style={{ fontSize: 13, color: "#64748b", marginBottom: 22 }}>500 niche decisions per month</p>
+              
+              <ul style={{ marginBottom: 26, display: "flex", flexDirection: "column", gap: 8 }}>
+                {["Everything in Starter", "✏️ What to design / What to avoid", "🎨 Smart Design Brief (Midjourney prompts)", "Better alternatives + all 10 keywords", "Listing Optimizer + Sales Estimator"].map((f) => (
+                  <li key={f} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 13, color: "#cbd5e1" }}>
+                    <span style={{ color: "#a5b4fc", flexShrink: 0, marginTop: 1, fontWeight: 700 }}>✓</span>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+
+              <Link href="/pricing"
+                style={{
+                  display: "block", textAlign: "center", padding: "12px 20px", borderRadius: 12,
+                  background: "#6366f1",
+                  color: "#fff",
+                  border: "none",
+                  fontSize: 14, fontWeight: 700, textDecoration: "none",
+                  boxShadow: "0 8px 24px rgba(99,102,241,0.35)"
+                }}>
+                Start with Pro →
+              </Link>
+            </div>
+          </div>
+
+          <div style={{ textAlign: "center", marginTop: 28 }}>
+            <Link href="/pricing" style={{ fontSize: 13, color: "#64748b", textDecoration: "underline" }} className="hover:text-white transition-colors">
+              See full plan comparison →
+            </Link>
+          </div>
+        </section>
         {/* CTA */}
         <section className="relative z-10 flex flex-col items-center text-center px-6 py-28" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
           <h2 style={{ fontSize: 40, fontWeight: 800, color: "#f1f5f9", letterSpacing: "-0.025em", marginBottom: 16, maxWidth: 600 }}>
