@@ -1,386 +1,955 @@
+"use client";
+
 import Link from "next/link";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { useRef, useState, useEffect } from "react";
 
 export default function Home() {
+  const heroRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"],
+  });
+
+  const heroY = useTransform(scrollYProgress, [0, 1], [0, 200]);
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
+
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({
+        x: (e.clientX / window.innerWidth - 0.5) * 30,
+        y: (e.clientY / window.innerHeight - 0.5) * 30,
+      });
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
+
   return (
-    <main className="relative min-h-screen bg-[#0f1623] text-white overflow-x-hidden">
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-        .lp { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
-        @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:0.4} }
-        @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
-        .pulse { animation: pulse-dot 2s ease infinite; }
-        .float { animation: float 4s ease infinite; }
+    <main className="relative min-h-screen overflow-x-hidden bg-[#08090d] text-white antialiased">
+      <style jsx global>{`
+        @import url("https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@300;400;500;600;700;800&display=swap");
+
+        html {
+          scroll-behavior: smooth;
+        }
+
+        body {
+          font-family: "Inter", system-ui, sans-serif;
+          background: #08090d;
+        }
+
+        .serif {
+          font-family: "Instrument Serif", serif;
+          font-style: italic;
+          letter-spacing: -0.02em;
+        }
+
+        .gradient-text {
+          background: linear-gradient(135deg, #ffffff 0%, #ffffff 40%, #94a3b8 100%);
+          -webkit-background-clip: text;
+          background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+
+        .gradient-accent {
+          background: linear-gradient(135deg, #a78bfa 0%, #f472b6 50%, #fb923c 100%);
+          -webkit-background-clip: text;
+          background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+
+        .glass {
+          background: rgba(255, 255, 255, 0.02);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .glow-border {
+          position: relative;
+        }
+
+        .glow-border::before {
+          content: "";
+          position: absolute;
+          inset: -1px;
+          border-radius: inherit;
+          padding: 1px;
+          background: linear-gradient(135deg, rgba(167, 139, 250, 0.4), rgba(244, 114, 182, 0.2), rgba(251, 146, 60, 0.4));
+          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor;
+          mask-composite: exclude;
+          pointer-events: none;
+        }
+
+        @keyframes meshFloat {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          33% { transform: translate(30px, -50px) scale(1.05); }
+          66% { transform: translate(-20px, 20px) scale(0.95); }
+        }
+
+        @keyframes meshFloat2 {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          50% { transform: translate(-40px, 30px) scale(1.1); }
+        }
+
+        @keyframes pulseSoft {
+          0%, 100% { opacity: 0.6; }
+          50% { opacity: 1; }
+        }
+
+        @keyframes shimmer {
+          0% { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
+        }
+
+        .shimmer-line {
+          background: linear-gradient(
+            90deg,
+            transparent 0%,
+            rgba(167, 139, 250, 0.4) 50%,
+            transparent 100%
+          );
+          background-size: 200% 100%;
+          animation: shimmer 3s ease-in-out infinite;
+        }
+
+        .mesh-1 {
+          animation: meshFloat 20s ease-in-out infinite;
+        }
+        .mesh-2 {
+          animation: meshFloat2 25s ease-in-out infinite;
+        }
+
+        .noise-overlay {
+          position: absolute;
+          inset: 0;
+          opacity: 0.03;
+          mix-blend-mode: overlay;
+          pointer-events: none;
+          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+        }
+
+        .marquee {
+          animation: marquee 30s linear infinite;
+        }
+
+        @keyframes marquee {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+
+        .verdict-pulse {
+          animation: pulseSoft 2.5s ease-in-out infinite;
+        }
+
+        .hover-lift {
+          transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
+        }
+        .hover-lift:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 20px 40px -20px rgba(167, 139, 250, 0.3);
+        }
       `}</style>
 
-      <div className="lp">
-        {/* Background */}
-        <div className="fixed inset-0 z-0 pointer-events-none"
-          style={{ backgroundImage: `linear-gradient(rgba(99,102,241,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(99,102,241,0.04) 1px, transparent 1px)`, backgroundSize: "48px 48px" }} />
-        <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-          <div className="absolute w-[600px] h-[600px] rounded-full -top-32 -right-32"
-            style={{ background: "radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%)" }} />
-          <div className="absolute w-[400px] h-[400px] rounded-full -bottom-20 -left-20"
-            style={{ background: "radial-gradient(circle, rgba(139,92,246,0.1) 0%, transparent 70%)" }} />
+      {/* ===== ANIMATED MESH BACKGROUND ===== */}
+      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+        <div
+          className="mesh-1 absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full opacity-40"
+          style={{
+            background:
+              "radial-gradient(circle, rgba(167,139,250,0.4) 0%, rgba(167,139,250,0) 70%)",
+            filter: "blur(60px)",
+          }}
+        />
+        <div
+          className="mesh-2 absolute top-1/4 -right-40 w-[700px] h-[700px] rounded-full opacity-30"
+          style={{
+            background:
+              "radial-gradient(circle, rgba(244,114,182,0.4) 0%, rgba(244,114,182,0) 70%)",
+            filter: "blur(80px)",
+          }}
+        />
+        <div
+          className="mesh-1 absolute bottom-0 left-1/3 w-[500px] h-[500px] rounded-full opacity-25"
+          style={{
+            background:
+              "radial-gradient(circle, rgba(251,146,60,0.4) 0%, rgba(251,146,60,0) 70%)",
+            filter: "blur(70px)",
+            animationDelay: "10s",
+          }}
+        />
+        <div className="noise-overlay" />
+      </div>
+
+      {/* ===== NAVIGATION ===== */}
+      <motion.nav
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className="relative z-50 flex items-center justify-between px-8 lg:px-16 py-6 border-b border-white/[0.04]"
+        style={{
+          background: "rgba(8, 9, 13, 0.6)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+        }}
+      >
+        <Link href="/" className="flex items-center gap-2 group">
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center relative overflow-hidden"
+            style={{
+              background:
+                "linear-gradient(135deg, #a78bfa 0%, #f472b6 100%)",
+            }}
+          >
+            <span className="text-white font-bold text-lg leading-none">M</span>
+            <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+          </div>
+          <span className="text-lg font-semibold tracking-tight">
+            Mark<span className="font-normal text-white/60">earn</span>
+          </span>
+        </Link>
+
+        <div className="hidden md:flex items-center gap-8 text-sm text-white/60">
+          <Link href="#how" className="hover:text-white transition">
+            How it works
+          </Link>
+          <Link href="#proof" className="hover:text-white transition">
+            Why it works
+          </Link>
+          <Link href="/pricing" className="hover:text-white transition">
+            Pricing
+          </Link>
         </div>
 
-        {/* Navbar */}
-        <nav className="relative z-10 flex items-center justify-between px-12 py-5 border-b border-white/[0.06]"
-          style={{ background: "rgba(15,22,35,0.8)", backdropFilter: "blur(12px)" }}>
-          <div style={{ fontSize: 18, fontWeight: 700, color: "#f8fafc", letterSpacing: "-0.03em" }}>
-            Mark<span style={{ color: "#818cf8" }}>earn</span>
-          </div>
-          <div className="flex items-center gap-8">
-            <Link href="/pricing" style={{ fontSize: 14, color: "#475569" }} className="hover:text-white transition-colors">Pricing</Link>
-            <Link href="/sign-in" style={{ fontSize: 14, color: "#475569" }} className="hover:text-white transition-colors">Sign in</Link>
-            <Link href="/sign-up"
-              style={{ background: "#6366f1", color: "#fff", fontSize: 14, fontWeight: 600, padding: "10px 20px", borderRadius: 10, textDecoration: "none", transition: "all 0.15s" }}
-              className="hover:opacity-88">
-              Start Free →
+        <div className="flex items-center gap-3">
+          <Link
+            href="/sign-in"
+            className="hidden md:block text-sm text-white/60 hover:text-white transition"
+          >
+            Sign in
+          </Link>
+          <Link
+            href="/sign-up"
+            className="text-sm font-medium px-4 py-2 rounded-lg bg-white text-black hover:bg-white/90 transition relative overflow-hidden group"
+          >
+            <span className="relative z-10">Start free</span>
+            <div className="absolute inset-0 bg-gradient-to-r from-violet-200 to-pink-200 opacity-0 group-hover:opacity-100 transition" />
+          </Link>
+        </div>
+      </motion.nav>
+
+      {/* ===== HERO ===== */}
+      <section ref={heroRef} className="relative z-10 px-6 lg:px-16 pt-24 pb-32">
+        <motion.div
+          style={{ y: heroY, opacity: heroOpacity }}
+          className="max-w-6xl mx-auto"
+        >
+          {/* Status pill */}
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="flex justify-center mb-10"
+          >
+            <div className="glass rounded-full px-4 py-2 flex items-center gap-2 text-xs text-white/70">
+              <div className="relative">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 verdict-pulse" />
+                <div className="absolute inset-0 w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+              </div>
+              <span>Live · Built for POD sellers · No credit card</span>
+            </div>
+          </motion.div>
+
+          {/* Hero headline */}
+          <motion.h1
+            initial={{ y: 30, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.9, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            className="text-center text-5xl md:text-7xl lg:text-[88px] font-bold tracking-[-0.04em] leading-[0.95] mb-8"
+          >
+            <span className="gradient-text">Stop designing</span>
+            <br />
+            <span className="serif gradient-accent text-6xl md:text-8xl lg:text-[110px]">
+              in the dark.
+            </span>
+          </motion.h1>
+
+          {/* Subheadline */}
+          <motion.p
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.5 }}
+            className="text-center text-lg md:text-xl text-white/60 max-w-2xl mx-auto mb-12 leading-relaxed font-light"
+          >
+            One answer. Zero noise. Markearn tells you{" "}
+            <span className="text-white font-medium">GO</span> or{" "}
+            <span className="text-white font-medium">AVOID</span> on any POD
+            niche — in 10 seconds, before you waste hours on designs nobody
+            wants.
+          </motion.p>
+
+          {/* CTA */}
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.7 }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20"
+          >
+            <Link
+              href="/sign-up"
+              className="group relative px-7 py-3.5 rounded-xl bg-white text-black text-sm font-semibold tracking-tight overflow-hidden hover-lift"
+            >
+              <span className="relative z-10 flex items-center gap-2">
+                Get your first verdict
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  className="group-hover:translate-x-0.5 transition-transform"
+                >
+                  <path
+                    d="M3 8h10m-4-4l4 4-4 4"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </span>
+              <div className="absolute inset-0 bg-gradient-to-r from-violet-100 via-pink-100 to-orange-100 opacity-0 group-hover:opacity-100 transition" />
             </Link>
-          </div>
-        </nav>
 
-        {/* HERO */}
-        <section className="relative z-10 flex flex-col items-center text-center px-6 pt-24 pb-20">
-
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 mb-10 px-5 py-2 rounded-full"
-            style={{ background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.25)", fontSize: 13, color: "#a5b4fc" }}>
-            <span className="w-2 h-2 rounded-full bg-green-400 pulse" style={{ flexShrink: 0 }} />
-            Decision first. Design later.
-          </div>
-
-          {/* Headline */}
-          <h1 style={{ fontSize: "clamp(40px, 6vw, 68px)", fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 1.1, marginBottom: 24, maxWidth: 820 }}>
-            Decide what to sell<br />
-            before you waste time<br />
-            <span style={{ color: "#818cf8" }}>designing.</span>
-          </h1>
-
-          <p style={{ fontSize: 18, color: "#94a3b8", maxWidth: 560, lineHeight: 1.7, marginBottom: 40, fontWeight: 400 }}>
-            Markearn gives POD sellers a clear <strong style={{ color: "#34d399", fontWeight: 700 }}>GO</strong> or <strong style={{ color: "#f87171", fontWeight: 700 }}>AVOID</strong> verdict on any niche — in seconds. No more guessing. No more wasted designs.
-          </p>
-
-          {/* CTAs */}
-          <div className="flex items-center gap-4 mb-16">
-            <Link href="/sign-up"
-              style={{ background: "#6366f1", color: "#fff", fontSize: 15, fontWeight: 700, padding: "14px 32px", borderRadius: 12, textDecoration: "none", transition: "all 0.15s", boxShadow: "0 8px 32px rgba(99,102,241,0.35)" }}
-              className="hover:opacity-90">
-              Start Free Trial →
+            <Link
+              href="#how"
+              className="text-sm text-white/60 hover:text-white transition flex items-center gap-2"
+            >
+              <span className="w-7 h-7 rounded-full glass flex items-center justify-center">
+                <svg
+                  width="10"
+                  height="10"
+                  viewBox="0 0 10 10"
+                  fill="currentColor"
+                >
+                  <path d="M2 1l6 4-6 4z" />
+                </svg>
+              </span>
+              See how it works
             </Link>
-            <Link href="/pricing"
-              style={{ color: "#475569", fontSize: 14, fontWeight: 500, padding: "14px 24px", borderRadius: 12, border: "1px solid rgba(255,255,255,0.08)", textDecoration: "none", transition: "all 0.15s" }}
-              className="hover:text-white hover:border-white/20">
-              See pricing
-            </Link>
-          </div>
+          </motion.div>
 
-          <p style={{ fontSize: 13, color: "#475569", marginBottom: 60 }}>
-            1-day free trial · No credit card required · Cancel anytime
-          </p>
+          {/* ===== HERO PRODUCT MOCKUP ===== */}
+          <motion.div
+            initial={{ y: 60, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 1.2, delay: 0.9, ease: [0.16, 1, 0.3, 1] }}
+            style={{
+              transform: `perspective(2000px) rotateX(${
+                mousePosition.y * 0.3
+              }deg) rotateY(${mousePosition.x * 0.3}deg)`,
+              transition: "transform 0.4s ease-out",
+            }}
+            className="relative max-w-4xl mx-auto"
+          >
+            {/* Glow behind mockup */}
+            <div
+              className="absolute -inset-20 opacity-50 pointer-events-none"
+              style={{
+                background:
+                  "radial-gradient(ellipse at center, rgba(167,139,250,0.3) 0%, transparent 60%)",
+                filter: "blur(40px)",
+              }}
+            />
 
-          {/* DASHBOARD PREVIEW */}
-          <div className="relative w-full max-w-4xl float">
-            <div className="absolute -inset-1 rounded-2xl" style={{ background: "linear-gradient(135deg, rgba(99,102,241,0.3), rgba(139,92,246,0.2))", filter: "blur(8px)" }} />
-            <div className="relative rounded-2xl overflow-hidden" style={{ background: "#111827", border: "1px solid rgba(255,255,255,0.08)" }}>
-
-              <div className="flex items-center gap-2 px-5 py-3" style={{ background: "#0f1623", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-                <div className="w-3 h-3 rounded-full" style={{ background: "#ff5f57" }} />
-                <div className="w-3 h-3 rounded-full" style={{ background: "#ffbd2e" }} />
-                <div className="w-3 h-3 rounded-full" style={{ background: "#28ca41" }} />
-                <div className="flex-1 mx-4 py-1 px-4 rounded-lg text-center" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", fontSize: 11, color: "#475569" }}>
+            {/* The dashboard card */}
+            <div className="glow-border relative rounded-2xl glass overflow-hidden">
+              {/* Top bar */}
+              <div className="flex items-center justify-between px-5 py-3 border-b border-white/[0.06]">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-white/10" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-white/10" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-white/10" />
+                </div>
+                <div className="text-[10px] font-mono text-white/30">
                   markearn.com/dashboard
                 </div>
+                <div className="w-10" />
               </div>
 
-              <div className="grid p-5 gap-4" style={{ gridTemplateColumns: "200px 1fr" }}>
-                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.2)", letterSpacing: "0.12em", textTransform: "uppercase", padding: "0 8px", marginBottom: 4 }}>TOOLS</div>
-                  {[
-                    { emoji: "🎯", label: "POD Decision", active: true },
-                    { emoji: "📊", label: "Competition", active: false },
-                    { emoji: "📈", label: "Trends", active: false },
-                    { emoji: "🏷️", label: "Tag Generator", active: false },
-                    { emoji: "🎨", label: "POD Research", active: false, badge: "NEW" },
-                  ].map((item) => (
-                    <div key={item.label} style={{
-                      display: "flex", alignItems: "center", gap: 10, padding: "9px 10px", borderRadius: 10,
-                      background: item.active ? "rgba(129,140,248,0.12)" : "transparent",
-                      border: item.active ? "1px solid rgba(129,140,248,0.25)" : "1px solid transparent",
-                      color: item.active ? "#a5b4fc" : "#475569", fontSize: 13, fontWeight: 500
-                    }}>
-                      <span style={{ fontSize: 14 }}>{item.emoji}</span>
-                      <span>{item.label}</span>
-                      {item.badge && <span style={{ marginLeft: "auto", fontSize: 9, fontWeight: 700, padding: "2px 6px", borderRadius: 20, background: "rgba(251,146,60,0.18)", color: "#fb923c" }}>{item.badge}</span>}
-                    </div>
-                  ))}
+              {/* Dashboard content */}
+              <div className="p-8 lg:p-12">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-[11px] uppercase tracking-[0.15em] text-white/40 font-medium">
+                    Niche analyzed
+                  </p>
+                  <div className="flex items-center gap-1.5 text-[11px] text-white/40">
+                    <div className="w-1 h-1 rounded-full bg-emerald-400" />
+                    <span>Live data · 0.8s</span>
+                  </div>
                 </div>
 
-                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#f1f5f9" }}>"halloween cat shirt"</div>
+                <h3 className="text-2xl md:text-3xl font-semibold mb-8 tracking-tight">
+                  halloween cat shirt
+                </h3>
 
-                  <div style={{ background: "rgba(52,211,153,0.06)", border: "1px solid rgba(52,211,153,0.2)", borderRadius: 12, padding: "16px 20px", display: "flex", alignItems: "center", gap: 16 }}>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 10, fontWeight: 700, color: "#34d399", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>POD VERDICT</div>
-                      <div style={{ fontSize: 18, fontWeight: 700, color: "#34d399", marginBottom: 4 }}>✅ GO — Great Opportunity</div>
-                      <div style={{ fontSize: 11, color: "#94a3b8" }}>Solid demand · Manageable competition · Easy to differentiate</div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                  {/* GO verdict */}
+                  <div className="md:col-span-1 relative rounded-xl p-6 overflow-hidden"
+                    style={{
+                      background:
+                        "linear-gradient(135deg, rgba(52, 211, 153, 0.12) 0%, rgba(52, 211, 153, 0.04) 100%)",
+                      border: "1px solid rgba(52, 211, 153, 0.2)",
+                    }}
+                  >
+                    <div className="absolute top-3 right-3">
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 verdict-pulse" />
                     </div>
-                    <div style={{ textAlign: "center", paddingLeft: 16, borderLeft: "1px solid rgba(52,211,153,0.2)" }}>
-                      <div style={{ fontSize: 32, fontWeight: 800, color: "#34d399", lineHeight: 1 }}>78</div>
-                      <div style={{ fontSize: 9, color: "#34d399", opacity: 0.7, fontWeight: 700, letterSpacing: "0.1em", marginTop: 4 }}>SCORE / 100</div>
+                    <p className="text-[10px] uppercase tracking-[0.15em] text-emerald-400/80 font-medium mb-2">
+                      Verdict
+                    </p>
+                    <p className="text-4xl font-bold text-emerald-300 tracking-tight">
+                      GO
+                    </p>
+                    <p className="text-[11px] text-emerald-400/60 mt-1">
+                      High confidence
+                    </p>
+                  </div>
+
+                  {/* Score */}
+                  <div className="rounded-xl p-6 bg-white/[0.02] border border-white/[0.06]">
+                    <p className="text-[10px] uppercase tracking-[0.15em] text-white/40 font-medium mb-2">
+                      Score
+                    </p>
+                    <div className="flex items-baseline gap-1">
+                      <p className="text-4xl font-bold tracking-tight">78</p>
+                      <p className="text-sm text-white/40">/100</p>
+                    </div>
+                    <div className="mt-3 h-1 rounded-full bg-white/[0.06] overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: "78%" }}
+                        transition={{ duration: 1.5, delay: 1.5, ease: "easeOut" }}
+                        className="h-full rounded-full"
+                        style={{
+                          background:
+                            "linear-gradient(90deg, #a78bfa 0%, #f472b6 100%)",
+                        }}
+                      />
                     </div>
                   </div>
 
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                    <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 10, padding: "10px 14px" }}>
-                      <div style={{ fontSize: 9, fontWeight: 700, color: "#34d399", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>✏️ What to design</div>
-                      {["Vintage retro 70s aesthetic", "Witch hat + arched cat silhouette", "Distressed grunge texture"].map((d, i) => (
-                        <div key={i} style={{ fontSize: 11, color: "#64748b", marginBottom: 3 }}>→ {d}</div>
-                      ))}
+                  {/* Time saved */}
+                  <div className="rounded-xl p-6 bg-white/[0.02] border border-white/[0.06]">
+                    <p className="text-[10px] uppercase tracking-[0.15em] text-white/40 font-medium mb-2">
+                      Time saved
+                    </p>
+                    <div className="flex items-baseline gap-1">
+                      <p className="text-4xl font-bold tracking-tight">3.5</p>
+                      <p className="text-sm text-white/40">hours</p>
                     </div>
-                    <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 10, padding: "10px 14px" }}>
-                      <div style={{ fontSize: 9, fontWeight: 700, color: "#f87171", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>🚫 What to avoid</div>
-                      {["Generic clip-art cats", "No personalization angle", "Copying bestsellers"].map((d, i) => (
-                        <div key={i} style={{ fontSize: 11, color: "#64748b", marginBottom: 3 }}>✕ {d}</div>
-                      ))}
+                    <p className="text-[11px] text-white/30 mt-1">vs manual research</p>
+                  </div>
+                </div>
+
+                {/* Action */}
+                <div className="rounded-xl p-5 bg-white/[0.02] border border-white/[0.06]">
+                  <div className="flex items-start gap-3">
+                    <div
+                      className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                      style={{
+                        background:
+                          "linear-gradient(135deg, rgba(167,139,250,0.2), rgba(244,114,182,0.2))",
+                      }}
+                    >
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 14 14"
+                        fill="none"
+                      >
+                        <path
+                          d="M2 7l3 3 7-7"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-[11px] uppercase tracking-[0.15em] text-white/40 font-medium mb-1">
+                        Next action
+                      </p>
+                      <p className="text-sm text-white/80 leading-relaxed">
+                        Design a vintage-style black cat with witch hat. Upload
+                        before <span className="text-white">Sept 15</span> to
+                        catch peak demand.
+                      </p>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        </section>
 
-        {/* PROBLEM SECTION */}
-        <section className="relative z-10 px-12 py-24 max-w-5xl mx-auto">
-          <div className="text-center mb-16">
-            <div style={{ fontSize: 12, fontWeight: 700, color: "#f87171", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 12 }}>The Problem</div>
-            <h2 style={{ fontSize: 36, fontWeight: 800, color: "#f1f5f9", letterSpacing: "-0.025em", marginBottom: 16, maxWidth: 720, margin: "0 auto 16px" }}>
-              Most POD sellers waste hours designing for niches that will never sell.
-            </h2>
-            <p style={{ fontSize: 17, color: "#94a3b8", maxWidth: 580, margin: "0 auto", lineHeight: 1.7 }}>
-              You spend an evening designing. You upload to Etsy. You wait. Nothing happens. Why? The niche was already saturated, declining, or simply too generic to rank.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-3 gap-6">
-            {[
-              { stat: "73%", label: "of new POD listings get zero sales in their first 90 days" },
-              { stat: "12hrs", label: "average time wasted designing for a niche that won't sell" },
-              { stat: "5x", label: "harder to rank in saturated niches without sub-niching" },
-            ].map((item, i) => (
-              <div key={i} style={{ background: "rgba(248,113,113,0.04)", border: "1px solid rgba(248,113,113,0.15)", borderRadius: 16, padding: "28px 24px", textAlign: "center" }}>
-                <div style={{ fontSize: 36, fontWeight: 800, color: "#f87171", letterSpacing: "-0.02em", marginBottom: 8 }}>{item.stat}</div>
-                <div style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.6 }}>{item.label}</div>
+            {/* Floating mini cards */}
+            <motion.div
+              initial={{ x: -20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ duration: 0.8, delay: 1.5 }}
+              className="hidden lg:flex absolute -left-16 top-32 glass rounded-xl px-4 py-3 items-center gap-3"
+            >
+              <div className="w-8 h-8 rounded-lg bg-rose-500/20 flex items-center justify-center text-rose-300 text-xs font-bold">
+                ✕
               </div>
+              <div>
+                <p className="text-[10px] text-white/40 uppercase tracking-wider">
+                  Yesterday
+                </p>
+                <p className="text-xs font-medium">"unicorn coffee mom"</p>
+                <p className="text-[10px] text-rose-300">AVOID · saturated</p>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ x: 20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ duration: 0.8, delay: 1.7 }}
+              className="hidden lg:flex absolute -right-16 bottom-32 glass rounded-xl px-4 py-3 items-center gap-3"
+            >
+              <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-300 text-xs font-bold">
+                ✓
+              </div>
+              <div>
+                <p className="text-[10px] text-white/40 uppercase tracking-wider">
+                  Today
+                </p>
+                <p className="text-xs font-medium">"matcha mom era"</p>
+                <p className="text-[10px] text-emerald-300">GO · trending</p>
+              </div>
+            </motion.div>
+          </motion.div>
+        </motion.div>
+      </section>
+
+      {/* ===== TRUST MARQUEE ===== */}
+      <section className="relative z-10 py-12 border-y border-white/[0.04] overflow-hidden">
+        <div className="text-center mb-8">
+          <p className="text-[11px] uppercase tracking-[0.2em] text-white/30 font-medium">
+            Built for sellers on
+          </p>
+        </div>
+        <div className="flex overflow-hidden">
+          <div className="marquee flex items-center gap-16 whitespace-nowrap">
+            {[
+              "Etsy",
+              "Redbubble",
+              "TeePublic",
+              "Amazon Merch",
+              "Society6",
+              "Spreadshirt",
+              "Zazzle",
+              "Etsy",
+              "Redbubble",
+              "TeePublic",
+              "Amazon Merch",
+              "Society6",
+              "Spreadshirt",
+              "Zazzle",
+            ].map((p, i) => (
+              <span
+                key={i}
+                className="text-2xl font-light text-white/20 tracking-tight"
+              >
+                {p}
+              </span>
             ))}
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* SOLUTION SECTION */}
-        <section className="relative z-10 px-12 py-24 max-w-5xl mx-auto" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-          <div className="text-center mb-16">
-            <div style={{ fontSize: 12, fontWeight: 700, color: "#34d399", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 12 }}>The Solution</div>
-            <h2 style={{ fontSize: 36, fontWeight: 800, color: "#f1f5f9", letterSpacing: "-0.025em", marginBottom: 16, maxWidth: 720, margin: "0 auto 16px" }}>
-              Get a clear verdict in 10 seconds.
-            </h2>
-            <p style={{ fontSize: 17, color: "#94a3b8", maxWidth: 580, margin: "0 auto", lineHeight: 1.7 }}>
-              Less data. Better decisions. Markearn analyzes real market signals and gives you one of three answers — so you can stop second-guessing and start selling.
+      {/* ===== PROBLEM SECTION ===== */}
+      <section className="relative z-10 px-6 lg:px-16 py-32">
+        <div className="max-w-5xl mx-auto">
+          <motion.div
+            initial={{ y: 30, opacity: 0 }}
+            whileInView={{ y: 0, opacity: 1 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8 }}
+            className="text-center mb-20"
+          >
+            <p className="text-[11px] uppercase tracking-[0.2em] text-white/40 font-medium mb-4">
+              The problem
             </p>
-          </div>
+            <h2 className="text-4xl md:text-6xl font-semibold tracking-[-0.03em] leading-[1.05]">
+              <span className="gradient-text">You're guessing.</span>
+              <br />
+              <span className="serif gradient-accent text-5xl md:text-7xl">
+                That's the whole problem.
+              </span>
+            </h2>
+          </motion.div>
 
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-3 gap-6">
             {[
-              { emoji: "✅", verdict: "GO", color: "#34d399", bg: "rgba(52,211,153,0.06)", border: "rgba(52,211,153,0.2)", desc: "Demand is solid. Competition is manageable. You can rank with the right angle. Design with confidence." },
-              { emoji: "⚠️", verdict: "POSSIBLE", color: "#fbbf24", bg: "rgba(251,191,36,0.06)", border: "rgba(251,191,36,0.2)", desc: "Workable, but only with the right strategy. Markearn tells you exactly how to niche down." },
-              { emoji: "🚫", verdict: "AVOID", color: "#f87171", bg: "rgba(248,113,113,0.06)", border: "rgba(248,113,113,0.2)", desc: "Saturated, declining, or too generic. Save your time. Markearn suggests better alternatives." },
+              {
+                stat: "73%",
+                label: "of new POD sellers",
+                detail: "make zero sales in their first 90 days",
+              },
+              {
+                stat: "12h",
+                label: "wasted per week",
+                detail: "designing shirts that nobody will buy",
+              },
+              {
+                stat: "5×",
+                label: "harder to rank",
+                detail: "in saturated niches you didn't see coming",
+              },
             ].map((item, i) => (
-              <div key={i} style={{ background: item.bg, border: `1px solid ${item.border}`, borderRadius: 16, padding: "28px 24px", textAlign: "center" }}>
-                <div style={{ fontSize: 40, marginBottom: 12 }}>{item.emoji}</div>
-                <div style={{ fontSize: 22, fontWeight: 800, color: item.color, letterSpacing: "0.05em", marginBottom: 12 }}>{item.verdict}</div>
-                <div style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.6 }}>{item.desc}</div>
-              </div>
+              <motion.div
+                key={i}
+                initial={{ y: 30, opacity: 0 }}
+                whileInView={{ y: 0, opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: i * 0.1 }}
+                className="glass rounded-2xl p-8 hover-lift"
+              >
+                <p className="serif text-6xl md:text-7xl gradient-accent mb-3">
+                  {item.stat}
+                </p>
+                <p className="text-sm font-medium text-white/80 mb-1">
+                  {item.label}
+                </p>
+                <p className="text-sm text-white/40 leading-relaxed">
+                  {item.detail}
+                </p>
+              </motion.div>
             ))}
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* HOW IT WORKS */}
-        <section className="relative z-10 px-12 py-24 max-w-5xl mx-auto" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-          <div className="text-center mb-16">
-            <div style={{ fontSize: 12, fontWeight: 700, color: "#a5b4fc", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 12 }}>How It Works</div>
-            <h2 style={{ fontSize: 36, fontWeight: 800, color: "#f1f5f9", letterSpacing: "-0.025em", marginBottom: 16 }}>
-              Three steps. Zero guesswork.
+      {/* ===== HOW IT WORKS ===== */}
+      <section id="how" className="relative z-10 px-6 lg:px-16 py-32">
+        <div className="max-w-6xl mx-auto">
+          <motion.div
+            initial={{ y: 30, opacity: 0 }}
+            whileInView={{ y: 0, opacity: 1 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8 }}
+            className="text-center mb-20"
+          >
+            <p className="text-[11px] uppercase tracking-[0.2em] text-white/40 font-medium mb-4">
+              How it works
+            </p>
+            <h2 className="text-4xl md:text-6xl font-semibold tracking-[-0.03em] leading-[1.05] mb-6">
+              <span className="gradient-text">Three steps.</span>{" "}
+              <span className="serif gradient-accent">Ten seconds.</span>
             </h2>
-          </div>
+            <p className="text-lg text-white/50 max-w-xl mx-auto">
+              No setup. No connecting your store. No 47-tab dashboard.
+            </p>
+          </motion.div>
 
-          <div className="grid grid-cols-3 gap-8">
+          <div className="space-y-6 max-w-4xl mx-auto">
             {[
-              { num: "01", title: "Type a niche", desc: 'Enter any niche idea — "halloween cat shirt", "boy mom era", "matcha lover mug".' },
-              { num: "02", title: "Get the verdict", desc: "Markearn returns a clear GO, POSSIBLE, or AVOID — with a score from 0 to 100." },
-              { num: "03", title: "Design with clarity", desc: "Know exactly what to design, what to avoid, and where the opportunity is." },
+              {
+                num: "01",
+                title: "Type a niche",
+                desc: "\"halloween cat shirt\". \"matcha mom era\". Whatever's on your mind.",
+                visual: (
+                  <div className="glass rounded-xl px-5 py-4 font-mono text-sm flex items-center gap-3">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 verdict-pulse" />
+                    <span className="text-white/60">→</span>
+                    <span>halloween cat shirt</span>
+                    <span className="text-white/30 ml-auto text-xs">↵</span>
+                  </div>
+                ),
+              },
+              {
+                num: "02",
+                title: "Get the verdict",
+                desc: "GO, POSSIBLE, or AVOID. Score 0–100. Real demand vs real competition.",
+                visual: (
+                  <div className="flex items-center gap-3">
+                    <div className="rounded-xl px-4 py-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 font-bold text-sm">
+                      GO · 78
+                    </div>
+                    <div className="rounded-xl px-4 py-3 bg-amber-500/10 border border-amber-500/20 text-amber-300 font-bold text-sm">
+                      POSSIBLE
+                    </div>
+                    <div className="rounded-xl px-4 py-3 bg-rose-500/10 border border-rose-500/20 text-rose-300 font-bold text-sm">
+                      AVOID
+                    </div>
+                  </div>
+                ),
+              },
+              {
+                num: "03",
+                title: "Design with confidence",
+                desc: "Markearn tells you what to design and what to avoid. You execute.",
+                visual: (
+                  <div className="glass rounded-xl px-5 py-4 text-sm leading-relaxed text-white/70">
+                    <span className="text-white/40">Design idea →</span>{" "}
+                    Vintage black cat + witch hat + bold script. Upload before
+                    Sept 15.
+                  </div>
+                ),
+              },
             ].map((step, i) => (
-              <div key={i}>
-                <div style={{ fontSize: 14, fontWeight: 700, color: "#6366f1", letterSpacing: "0.1em", marginBottom: 14 }}>{step.num}</div>
-                <h3 style={{ fontSize: 18, fontWeight: 700, color: "#f1f5f9", marginBottom: 10 }}>{step.title}</h3>
-                <p style={{ fontSize: 14, color: "#94a3b8", lineHeight: 1.7 }}>{step.desc}</p>
-              </div>
+              <motion.div
+                key={i}
+                initial={{ x: -30, opacity: 0 }}
+                whileInView={{ x: 0, opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.7, delay: i * 0.1 }}
+                className="glass rounded-2xl p-8 grid md:grid-cols-[120px_1fr_auto] gap-6 items-center hover-lift"
+              >
+                <div className="serif text-5xl md:text-6xl text-white/20">
+                  {step.num}
+                </div>
+                <div>
+                  <h3 className="text-xl md:text-2xl font-semibold mb-2 tracking-tight">
+                    {step.title}
+                  </h3>
+                  <p className="text-white/50 leading-relaxed">{step.desc}</p>
+                </div>
+                <div className="md:max-w-md">{step.visual}</div>
+              </motion.div>
             ))}
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* WHY MARKEARN */}
-        <section className="relative z-10 px-12 py-24 max-w-5xl mx-auto" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-          <div className="text-center mb-16">
-            <h2 style={{ fontSize: 36, fontWeight: 800, color: "#f1f5f9", letterSpacing: "-0.025em", marginBottom: 16, maxWidth: 720, margin: "0 auto 16px" }}>
-              Built for sellers, not analysts.
-            </h2>
-            <p style={{ fontSize: 17, color: "#94a3b8", maxWidth: 560, margin: "0 auto", lineHeight: 1.7 }}>
-              Other tools throw graphs at you and leave you to figure it out. Markearn tells you what to do next.
+      {/* ===== WHY MARKEARN — THE DIFFERENT SECTION ===== */}
+      <section id="proof" className="relative z-10 px-6 lg:px-16 py-32">
+        <div className="max-w-5xl mx-auto">
+          <motion.div
+            initial={{ y: 30, opacity: 0 }}
+            whileInView={{ y: 0, opacity: 1 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8 }}
+            className="text-center mb-20"
+          >
+            <p className="text-[11px] uppercase tracking-[0.2em] text-white/40 font-medium mb-4">
+              Why Markearn is different
             </p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-5 max-w-3xl mx-auto">
-            {[
-              { title: "Decision-first design", desc: "We don't just show data. We give you a verdict you can act on." },
-              { title: "10-second clarity", desc: "Type a niche. Get the answer. Move on. No deep analysis required." },
-              { title: "Designed for POD", desc: "Built specifically for print-on-demand sellers — not Amazon FBA, not dropshipping." },
-              { title: "Less is more", desc: "We hide the noise. We surface what matters. Every screen serves one purpose." },
-            ].map((item, i) => (
-              <div key={i} style={{ background: "#111827", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14, padding: "22px 24px" }}>
-                <h3 style={{ fontSize: 15, fontWeight: 700, color: "#f1f5f9", marginBottom: 8 }}>{item.title}</h3>
-                <p style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.6 }}>{item.desc}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-{/* PRICING TEASER */}
-        <section className="relative z-10 px-12 py-24 max-w-5xl mx-auto" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-          <div className="text-center mb-12">
-            <div style={{ fontSize: 12, fontWeight: 700, color: "#a5b4fc", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 12 }}>Simple Pricing</div>
-            <h2 style={{ fontSize: 36, fontWeight: 800, color: "#f1f5f9", letterSpacing: "-0.025em", marginBottom: 14 }}>
-              Two plans. No surprises.
+            <h2 className="text-4xl md:text-6xl font-semibold tracking-[-0.03em] leading-[1.05]">
+              <span className="gradient-text">Not more data.</span>
+              <br />
+              <span className="serif gradient-accent text-5xl md:text-7xl">
+                A decision you can act on.
+              </span>
             </h2>
-            <p style={{ fontSize: 16, color: "#94a3b8" }}>1-day free trial · No credit card required · Cancel anytime</p>
-          </div>
+          </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-            {/* STARTER */}
-            <div style={{
-              background: "rgba(255,255,255,0.03)",
-              border: "1px solid rgba(255,255,255,0.07)",
-              borderRadius: 20,
-              padding: "32px 28px",
-              textAlign: "left"
-            }}>
-              <p style={{ fontSize: 13, fontWeight: 700, color: "#94a3b8", marginBottom: 6, letterSpacing: "0.07em", textTransform: "uppercase" }}>Starter</p>
-              <p style={{ fontSize: 12, color: "#64748b", marginBottom: 18 }}>For sellers testing the waters</p>
-              <div style={{ display: "flex", alignItems: "flex-end", gap: 4, marginBottom: 6 }}>
-                <span style={{ fontSize: 44, fontWeight: 800, color: "#f1f5f9", letterSpacing: "-0.03em", lineHeight: 1 }}>$19</span>
-                <span style={{ fontSize: 14, color: "#475569", marginBottom: 6 }}>/month</span>
-              </div>
-              <p style={{ fontSize: 13, color: "#64748b", marginBottom: 22 }}>100 niche decisions per month</p>
-              
-              <ul style={{ marginBottom: 26, display: "flex", flexDirection: "column", gap: 8 }}>
-                {["GO / POSSIBLE / AVOID verdict", "POD Score 0-100", "Strategy tips per niche", "Trend & Tag tools"].map((f) => (
-                  <li key={f} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 13, color: "#cbd5e1" }}>
-                    <span style={{ color: "#6366f1", flexShrink: 0, marginTop: 1, fontWeight: 700 }}>✓</span>
-                    {f}
+          <div className="grid md:grid-cols-2 gap-6">
+            <motion.div
+              initial={{ y: 30, opacity: 0 }}
+              whileInView={{ y: 0, opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7 }}
+              className="rounded-2xl p-8 bg-white/[0.02] border border-white/[0.06]"
+            >
+              <p className="text-[11px] uppercase tracking-[0.2em] text-white/40 font-medium mb-4">
+                What we don't do
+              </p>
+              <ul className="space-y-3">
+                {[
+                  "Endless dashboards",
+                  "47 metrics you'll never read",
+                  "Reports that take hours to interpret",
+                  "Make you guess what to design",
+                ].map((item) => (
+                  <li
+                    key={item}
+                    className="flex items-start gap-3 text-white/40"
+                  >
+                    <span className="w-5 h-5 rounded-full border border-white/10 flex items-center justify-center mt-0.5">
+                      <svg
+                        width="8"
+                        height="8"
+                        viewBox="0 0 8 8"
+                        fill="currentColor"
+                      >
+                        <path d="M1.5 1.5l5 5m0-5l-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                      </svg>
+                    </span>
+                    {item}
                   </li>
                 ))}
               </ul>
+            </motion.div>
 
-              <Link href="/pricing"
-                style={{
-                  display: "block", textAlign: "center", padding: "12px 20px", borderRadius: 12,
-                  background: "rgba(99,102,241,0.1)",
-                  color: "#818cf8",
-                  border: "1px solid rgba(99,102,241,0.2)",
-                  fontSize: 14, fontWeight: 700, textDecoration: "none"
-                }}>
-                Start with Starter
-              </Link>
-            </div>
-
-            {/* PRO */}
-            <div style={{
-              background: "rgba(99,102,241,0.08)",
-              border: "2px solid rgba(99,102,241,0.4)",
-              borderRadius: 20,
-              padding: "32px 28px",
-              position: "relative",
-              textAlign: "left"
-            }}>
-              <div style={{ position: "absolute", top: -14, left: "50%", transform: "translateX(-50%)", background: "#6366f1", color: "#fff", fontSize: 11, fontWeight: 700, padding: "5px 18px", borderRadius: 20, whiteSpace: "nowrap", letterSpacing: "0.05em" }}>
-                MOST POPULAR
-              </div>
-              
-              <p style={{ fontSize: 13, fontWeight: 700, color: "#a5b4fc", marginBottom: 6, letterSpacing: "0.07em", textTransform: "uppercase" }}>Pro</p>
-              <p style={{ fontSize: 12, color: "#64748b", marginBottom: 18 }}>For serious POD sellers</p>
-              <div style={{ display: "flex", alignItems: "flex-end", gap: 4, marginBottom: 6 }}>
-                <span style={{ fontSize: 44, fontWeight: 800, color: "#f1f5f9", letterSpacing: "-0.03em", lineHeight: 1 }}>$39</span>
-                <span style={{ fontSize: 14, color: "#475569", marginBottom: 6 }}>/month</span>
-              </div>
-              <p style={{ fontSize: 13, color: "#64748b", marginBottom: 22 }}>500 niche decisions per month</p>
-              
-              <ul style={{ marginBottom: 26, display: "flex", flexDirection: "column", gap: 8 }}>
-                {["Everything in Starter", "✏️ What to design / What to avoid", "🎨 Smart Design Brief (Midjourney prompts)", "Better alternatives + all 10 keywords", "Listing Optimizer + Sales Estimator"].map((f) => (
-                  <li key={f} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 13, color: "#cbd5e1" }}>
-                    <span style={{ color: "#a5b4fc", flexShrink: 0, marginTop: 1, fontWeight: 700 }}>✓</span>
-                    {f}
+            <motion.div
+              initial={{ y: 30, opacity: 0 }}
+              whileInView={{ y: 0, opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, delay: 0.1 }}
+              className="glow-border rounded-2xl p-8 glass"
+            >
+              <p className="text-[11px] uppercase tracking-[0.2em] gradient-accent font-semibold mb-4">
+                What we do
+              </p>
+              <ul className="space-y-3">
+                {[
+                  "One clear verdict in 10 seconds",
+                  "Tell you what to design tomorrow",
+                  "Tell you what to avoid (and why)",
+                  "Save you hours every single week",
+                ].map((item) => (
+                  <li
+                    key={item}
+                    className="flex items-start gap-3 text-white/90"
+                  >
+                    <span
+                      className="w-5 h-5 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0"
+                      style={{
+                        background:
+                          "linear-gradient(135deg, #a78bfa 0%, #f472b6 100%)",
+                      }}
+                    >
+                      <svg
+                        width="10"
+                        height="10"
+                        viewBox="0 0 10 10"
+                        fill="none"
+                      >
+                        <path
+                          d="M2 5l2 2 4-4"
+                          stroke="white"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </span>
+                    {item}
                   </li>
                 ))}
               </ul>
+            </motion.div>
+          </div>
 
-              <Link href="/pricing"
-                style={{
-                  display: "block", textAlign: "center", padding: "12px 20px", borderRadius: 12,
-                  background: "#6366f1",
-                  color: "#fff",
-                  border: "none",
-                  fontSize: 14, fontWeight: 700, textDecoration: "none",
-                  boxShadow: "0 8px 24px rgba(99,102,241,0.35)"
-                }}>
-                Start with Pro →
+          <motion.div
+            initial={{ y: 30, opacity: 0 }}
+            whileInView={{ y: 0, opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+            className="mt-12 text-center"
+          >
+            <p className="serif text-2xl md:text-3xl text-white/70 max-w-2xl mx-auto leading-relaxed">
+              "If one AVOID saves you a few hours, Markearn has already paid for
+              itself."
+            </p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ===== FINAL CTA ===== */}
+      <section className="relative z-10 px-6 lg:px-16 py-32">
+        <motion.div
+          initial={{ y: 40, opacity: 0 }}
+          whileInView={{ y: 0, opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.9 }}
+          className="max-w-4xl mx-auto"
+        >
+          <div className="glow-border relative rounded-3xl glass overflow-hidden p-12 md:p-20 text-center">
+            <div
+              className="absolute inset-0 opacity-30 pointer-events-none"
+              style={{
+                background:
+                  "radial-gradient(ellipse at center, rgba(167,139,250,0.3) 0%, transparent 70%)",
+              }}
+            />
+
+            <p className="text-[11px] uppercase tracking-[0.2em] text-white/40 font-medium mb-4 relative">
+              One last thing
+            </p>
+            <h2 className="text-4xl md:text-6xl font-semibold tracking-[-0.03em] leading-[1.05] mb-6 relative">
+              <span className="gradient-text">Your next design</span>
+              <br />
+              <span className="serif gradient-accent text-5xl md:text-7xl">
+                shouldn't be a guess.
+              </span>
+            </h2>
+            <p className="text-lg text-white/50 max-w-xl mx-auto mb-10 relative">
+              Free trial. No credit card. Your first verdict in 10 seconds.
+            </p>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 relative">
+              <Link
+                href="/sign-up"
+                className="group relative px-8 py-4 rounded-xl bg-white text-black text-sm font-semibold tracking-tight overflow-hidden hover-lift"
+              >
+                <span className="relative z-10 flex items-center gap-2">
+                  Get your first verdict
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    className="group-hover:translate-x-0.5 transition-transform"
+                  >
+                    <path
+                      d="M3 8h10m-4-4l4 4-4 4"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </span>
+              </Link>
+              <Link
+                href="/pricing"
+                className="text-sm text-white/60 hover:text-white transition"
+              >
+                See pricing →
               </Link>
             </div>
           </div>
+        </motion.div>
+      </section>
 
-          <div style={{ textAlign: "center", marginTop: 28 }}>
-            <Link href="/pricing" style={{ fontSize: 13, color: "#64748b", textDecoration: "underline" }} className="hover:text-white transition-colors">
-              See full plan comparison →
+      {/* ===== FOOTER ===== */}
+      <footer className="relative z-10 px-6 lg:px-16 py-12 border-t border-white/[0.04]">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-2">
+            <div
+              className="w-6 h-6 rounded-md flex items-center justify-center"
+              style={{
+                background:
+                  "linear-gradient(135deg, #a78bfa 0%, #f472b6 100%)",
+              }}
+            >
+              <span className="text-white font-bold text-xs leading-none">M</span>
+            </div>
+            <span className="text-sm text-white/60">
+              Mark<span className="text-white/30">earn</span> · © 2026
+            </span>
+          </div>
+
+          <div className="flex items-center gap-6 text-xs text-white/40">
+            <Link href="/pricing" className="hover:text-white transition">
+              Pricing
             </Link>
+            <a
+              href="mailto:support@markearn.com"
+              className="hover:text-white transition"
+            >
+              support@markearn.com
+            </a>
           </div>
-        </section>
-        {/* CTA */}
-        <section className="relative z-10 flex flex-col items-center text-center px-6 py-28" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-          <h2 style={{ fontSize: 40, fontWeight: 800, color: "#f1f5f9", letterSpacing: "-0.025em", marginBottom: 16, maxWidth: 600 }}>
-            Stop guessing. Start deciding.
-          </h2>
-          <p style={{ fontSize: 17, color: "#94a3b8", marginBottom: 36, maxWidth: 520, lineHeight: 1.7 }}>
-            Try Markearn free for 24 hours. Decide what to sell before you waste another evening designing.
-          </p>
-          <Link href="/sign-up"
-            style={{ background: "#6366f1", color: "#fff", fontSize: 16, fontWeight: 700, padding: "16px 40px", borderRadius: 14, textDecoration: "none", boxShadow: "0 8px 32px rgba(99,102,241,0.35)", transition: "all 0.15s" }}
-            className="hover:opacity-90">
-            Start Free Trial →
-          </Link>
-          <p style={{ fontSize: 13, color: "#475569", marginTop: 16 }}>
-            No credit card required · Cancel anytime
-          </p>
-        </section>
-
-        {/* Footer */}
-        <footer className="relative z-10 flex items-center justify-between px-12 py-6" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-          <div style={{ fontSize: 15, fontWeight: 700, color: "#f8fafc", letterSpacing: "-0.03em" }}>
-            Mark<span style={{ color: "#818cf8" }}>earn</span>
-          </div>
-          <div className="flex gap-8">
-            <Link href="/pricing" style={{ fontSize: 13, color: "#334155", textDecoration: "none" }} className="hover:text-white transition-colors">Pricing</Link>
-            <a href="mailto:support@markearn.com" style={{ fontSize: 13, color: "#334155", textDecoration: "none" }} className="hover:text-white transition-colors">Contact</a>
-          </div>
-          <p style={{ fontSize: 12, color: "#1e293b" }}>© 2026 Markearn. All rights reserved.</p>
-        </footer>
-      </div>
+        </div>
+      </footer>
     </main>
   );
 }
