@@ -1,10 +1,7 @@
 "use client";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import DashLayout from "../components/DashLayout";
 
-// ============================================
-// DYNAMIC SUGGESTIONS
-// ============================================
 function getDynamicSuggestions(): string[] {
   const month = new Date().getMonth() + 1;
   const seasonal: Record<number, string[]> = {
@@ -25,67 +22,34 @@ function getDynamicSuggestions(): string[] {
   return [...(seasonal[month] || []), ...trending].slice(0, 8);
 }
 
-// ============================================
-// SEO SCORE BREAKDOWN - what's missing/good
-// ============================================
 function getScoreBreakdown(result: any) {
   if (!result) return [];
   const items = [];
-  
-  // Title length check
   const titleLen = result.title?.length || 0;
-  if (titleLen >= 100 && titleLen <= 140) {
-    items.push({ pass: true, text: `Title length optimal (${titleLen}/140 chars)` });
-  } else if (titleLen < 100) {
-    items.push({ pass: false, text: `Title too short (${titleLen} chars) — aim for 100-140 to maximize SEO` });
-  } else {
-    items.push({ pass: false, text: `Title too long (${titleLen} chars) — keep under 140` });
-  }
-  
-  // Keywords count
+  if (titleLen >= 100 && titleLen <= 140) items.push({ pass: true, text: `Title length optimal (${titleLen}/140 chars)` });
+  else if (titleLen < 100) items.push({ pass: false, text: `Title too short (${titleLen} chars) — aim for 100-140 to maximize SEO` });
+  else items.push({ pass: false, text: `Title too long (${titleLen} chars) — keep under 140` });
+
   const tagCount = result.tags?.length || 0;
-  if (tagCount >= 13) {
-    items.push({ pass: true, text: `All 13 tag slots used (max SEO juice)` });
-  } else {
-    items.push({ pass: false, text: `Only ${tagCount}/13 tags — add more for better visibility` });
-  }
-  
-  // Description length
+  if (tagCount >= 13) items.push({ pass: true, text: `All 13 tag slots used (max SEO juice)` });
+  else items.push({ pass: false, text: `Only ${tagCount}/13 tags — add more for better visibility` });
+
   const descLen = result.description?.length || 0;
-  if (descLen >= 500) {
-    items.push({ pass: true, text: `Description has good depth (${descLen} chars)` });
-  } else {
-    items.push({ pass: false, text: `Description too thin (${descLen} chars) — Etsy favors detailed listings` });
-  }
-  
-  // Competition
-  if (result.competition === "Low") {
-    items.push({ pass: true, text: `Low competition niche — easy to rank` });
-  } else if (result.competition === "Medium") {
-    items.push({ pass: true, text: `Medium competition — workable with strong SEO` });
-  } else {
-    items.push({ pass: false, text: `High competition — focus on long-tail variants & personalization` });
-  }
-  
+  if (descLen >= 500) items.push({ pass: true, text: `Description has good depth (${descLen} chars)` });
+  else items.push({ pass: false, text: `Description too thin (${descLen} chars) — Etsy favors detailed listings` });
+
+  if (result.competition === "Low") items.push({ pass: true, text: `Low competition niche — easy to rank` });
+  else if (result.competition === "Medium") items.push({ pass: true, text: `Medium competition — workable with strong SEO` });
+  else items.push({ pass: false, text: `High competition — focus on long-tail variants & personalization` });
+
   return items;
 }
 
 export default function ListingOptimizer() {
-  const router = useRouter();
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [copied, setCopied] = useState<string | null>(null);
-
-  const nav = [
-    { label: "POD Decision", path: "/dashboard", emoji: "🎯" },
-    { label: "Competition", path: "/competition", emoji: "📊" },
-    { label: "Trends", path: "/trends", emoji: "📈" },
-    { label: "Tag Generator", path: "/tags", emoji: "🏷️" },
-    { label: "Listing Optimizer", path: "/listing", emoji: "⭐", active: true },
-    { label: "Sales Estimator", path: "/sales", emoji: "💰" },
-    { label: "POD Research", path: "/pod", emoji: "🎨", badge: "NEW" },
-  ];
 
   const suggestions = getDynamicSuggestions();
 
@@ -95,11 +59,7 @@ export default function ListingOptimizer() {
     setQuery(q);
     setLoading(true); setResult(null);
     try {
-      const res = await fetch("/api/keywords", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ keyword: q.trim().toLowerCase() }),
-      });
+      const res = await fetch("/api/keywords", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: q.trim().toLowerCase() }) });
       const data = await res.json();
       if (!data.error && data.related?.length) {
         const topKeywords = data.related.sort((a: any, b: any) => parseInt(b.vol) - parseInt(a.vol)).slice(0, 13).map((k: any) => k.kw);
@@ -109,26 +69,24 @@ export default function ListingOptimizer() {
         const tags = generateTags(mainKw, topKeywords);
         const score = calculateScore(data.volume, data.competition, topKeywords.length);
         setResult({ title, description, tags, score, volume: data.volume, competition: data.competition, keyword: mainKw });
-      } else {
-        setResult({ error: true });
-      }
+      } else setResult({ error: true });
     } catch { setResult({ error: true }); }
     setLoading(false);
   }
 
   function generateTitle(kw: string, related: string[]) {
-    const cap = (s: string) => s.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
-    const extras = related.filter(r => r !== kw).slice(0, 2);
+    const cap = (s: string) => s.split(" ").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+    const extras = related.filter((r) => r !== kw).slice(0, 2);
     return ([cap(kw), ...extras.map(cap)].join(" | ") + " — Gift for Her, Personalized, Handmade").slice(0, 140);
   }
 
   function generateDescription(kw: string, related: string[]) {
-    const cap = (s: string) => s.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+    const cap = (s: string) => s.split(" ").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
     return `✨ Looking for the perfect ${cap(kw)}? You've found it!\n\nOur ${cap(kw)} is carefully crafted with attention to every detail — making it the ideal gift for birthdays, holidays, weddings, or just because.\n\n🎁 PERFECT FOR: ${related.slice(0, 5).map(cap).join(", ")}\n\n✅ WHY CHOOSE US:\n- High-quality materials and craftsmanship\n- Personalization available — make it truly unique\n- Fast processing and shipping\n- 100% satisfaction guaranteed\n\n📦 DETAILS:\n- Ready to ship in 1–3 business days\n- Gift wrapping available upon request\n- Custom orders welcome — message us!\n\n💬 Questions? We're here to help.\n\nSearch terms: ${related.slice(0, 8).join(", ")}`.slice(0, 2000);
   }
 
   function generateTags(kw: string, related: string[]) {
-    return [...new Set([kw, ...related].map(t => t.toLowerCase().trim()))].slice(0, 13);
+    return [...new Set([kw, ...related].map((t) => t.toLowerCase().trim()))].slice(0, 13);
   }
 
   function calculateScore(volume: string, competition: string, kwCount: number) {
@@ -146,7 +104,7 @@ export default function ListingOptimizer() {
   function copyToClipboard(text: string, key: string) {
     navigator.clipboard.writeText(text);
     setCopied(key);
-    setTimeout(() => setCopied(null), 2000);
+    setTimeout(() => setCopied(null), 1500);
   }
 
   const scoreColor = result?.score >= 80 ? "#34d399" : result?.score >= 60 ? "#fbbf24" : "#f87171";
@@ -154,198 +112,109 @@ export default function ListingOptimizer() {
   const breakdown = result && !result.error ? getScoreBreakdown(result) : [];
 
   return (
-    <>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
-        .rk { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: #0f1623; color: #cbd5e1; min-height: 100vh; display: flex; }
-        .rk-side { width: 228px; background: #111827; border-right: 1px solid rgba(255,255,255,0.07); display: flex; flex-direction: column; flex-shrink: 0; padding: 24px 14px 20px; }
-        .rk-logo { font-size: 18px; font-weight: 700; color: #f8fafc; letter-spacing: -0.03em; padding: 0 6px; margin-bottom: 8px; }
-        .rk-logo em { font-style: normal; color: #818cf8; }
-        .rk-live-row { display: flex; align-items: center; gap: 6px; padding: 0 6px; margin-bottom: 28px; }
-        .rk-dot { width: 7px; height: 7px; border-radius: 50%; background: #34d399; animation: dpulse 2s ease infinite; }
-        .rk-live-label { font-size: 11px; font-weight: 500; color: #34d399; letter-spacing: 0.04em; }
-        .rk-section-label { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.2); letter-spacing: 0.12em; text-transform: uppercase; padding: 0 6px; margin-bottom: 6px; }
-        .rk-nav { display: flex; flex-direction: column; gap: 2px; flex: 1; }
-        .rk-navbtn { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 10px; cursor: pointer; border: 1px solid transparent; background: none; color: #64748b; font-size: 13px; font-weight: 500; width: 100%; text-align: left; transition: all 0.15s; font-family: inherit; }
-        .rk-navbtn:hover { background: rgba(255,255,255,0.05); color: #e2e8f0; }
-        .rk-navbtn-active { background: rgba(129,140,248,0.12) !important; border-color: rgba(129,140,248,0.25) !important; color: #a5b4fc !important; }
-        .rk-new-badge { margin-left: auto; font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 20px; background: rgba(251,146,60,0.18); color: #fb923c; }
-        .rk-upgrade { margin-top: auto; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.06); }
-        .rk-upgrade-btn { width: 100%; padding: 10px 16px; border-radius: 10px; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; font-size: 13px; font-weight: 600; border: none; cursor: pointer; font-family: inherit; }
-        .rk-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-        .rk-topbar { height: 48px; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; padding: 0 36px; background: #0f1623; flex-shrink: 0; }
-        .rk-content { flex: 1; padding: 36px 40px; overflow-y: auto; }
-        .rk-title { font-size: 22px; font-weight: 700; color: #f1f5f9; letter-spacing: -0.025em; margin-bottom: 6px; }
-        .rk-sub { font-size: 13px; color: #475569; margin-bottom: 28px; }
-        .rk-search-row { display: flex; gap: 10px; margin-bottom: 14px; }
-        .rk-input { flex: 1; background: #1e293b; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 13px 18px; color: #e2e8f0; font-size: 14px; outline: none; font-family: inherit; transition: all 0.15s; }
-        .rk-input::placeholder { color: #334155; }
-        .rk-input:focus { border-color: rgba(129,140,248,0.6); box-shadow: 0 0 0 4px rgba(129,140,248,0.08); }
-        .rk-btn { background: #6366f1; color: #fff; border: none; border-radius: 12px; padding: 13px 26px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; white-space: nowrap; transition: all 0.15s; }
-        .rk-btn:hover:not(:disabled) { background: #4f46e5; transform: translateY(-1px); }
-        .rk-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-        .rk-chips { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 32px; }
-        .rk-chip { padding: 6px 14px; border-radius: 20px; background: #1e293b; border: 1px solid rgba(255,255,255,0.07); color: #475569; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.12s; font-family: inherit; }
-        .rk-chip:hover { background: rgba(99,102,241,0.1); border-color: rgba(99,102,241,0.3); color: #a5b4fc; }
-        .rk-card { background: #1e293b; border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 20px 22px; margin-bottom: 16px; }
-        .rk-copy-btn { padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; font-family: inherit; transition: all 0.15s; }
-        .rk-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 220px; gap: 16px; }
-        .rk-spinner { width: 36px; height: 36px; border: 3px solid rgba(99,102,241,0.2); border-top-color: #6366f1; border-radius: 50%; animation: spin 0.8s linear infinite; }
-        .rk-fade { animation: rkfade 0.35s ease; }
-        
-        /* SCORE BREAKDOWN */
-        .rk-breakdown-item { display: flex; gap: 10px; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
-        .rk-breakdown-item:last-child { border-bottom: none; }
-        .rk-breakdown-icon { font-size: 14px; flex-shrink: 0; line-height: 1.4; }
-        .rk-breakdown-text { font-size: 13px; line-height: 1.5; }
-        
-        @keyframes rkfade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes dpulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
-        @keyframes spin { to{transform:rotate(360deg)} }
-      `}</style>
+    <DashLayout topbarLabel="Listing Optimizer · SEO title, description & tags">
+      <div className="dash-hero-title">Listing <em>optimizer.</em></div>
+      <div className="dash-hero-sub">Generate SEO-optimized title, description and tags — works for Etsy, Redbubble, TeePublic, Amazon Merch.</div>
 
-      <div className="rk">
-        <aside className="rk-side">
-          <div className="rk-logo">Mark<em>earn</em></div>
-          <div className="rk-live-row"><div className="rk-dot" /><span className="rk-live-label">Live data</span></div>
-          <div className="rk-section-label">Tools</div>
-          <nav className="rk-nav">
-            {nav.map(item => (
-              <button key={item.path} onClick={() => router.push(item.path)}
-                className={`rk-navbtn ${item.active ? "rk-navbtn-active" : ""}`}>
-                <span style={{ fontSize: 14, width: 20, textAlign: "center" }}>{item.emoji}</span>
-                <span>{item.label}</span>
-                {item.badge && <span className="rk-new-badge">{item.badge}</span>}
-              </button>
+      <div className="dash-search-row">
+        <input className="dash-input" value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleOptimize()} placeholder='Enter your product, e.g. "matcha mug", "halloween shirt"' />
+        <button className="dash-btn" onClick={() => handleOptimize()} disabled={loading}>{loading ? "Optimizing..." : (<>Optimize<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8h10m-4-4l4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg></>)}</button>
+      </div>
+
+      {!result && !loading && (
+        <div className="dash-chips">
+          {suggestions.map((s) => (<button key={s} className="dash-chip" onClick={() => handleOptimize(s)}>{s}</button>))}
+        </div>
+      )}
+
+      {loading && <div className="dash-loading"><div className="dash-spinner" /><span style={{ fontSize: 13, color: "rgba(255,255,255,0.4)" }}>Generating optimized listing...</span></div>}
+
+      {result?.error && <div style={{ textAlign: "center", padding: 32, color: "rgba(255,255,255,0.3)", fontSize: 13 }}>No data found for "{query}" — try another keyword</div>}
+
+      {result && !result.error && (
+        <div className="fade-up">
+          {/* SCORE GAUGE */}
+          <div className="dash-card" style={{ display: "flex", alignItems: "center", gap: 24 }}>
+            <div style={{ position: "relative", width: 88, height: 88, flexShrink: 0 }}>
+              <svg width="88" height="88" style={{ transform: "rotate(-90deg)" }} viewBox="0 0 88 88">
+                <circle cx="44" cy="44" r="36" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="6" />
+                <circle cx="44" cy="44" r="36" fill="none" stroke={scoreColor} strokeWidth="6" strokeDasharray={`${(result.score / 100) * 226} 226`} strokeLinecap="round" />
+              </svg>
+              <div className="serif" style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, color: scoreColor }}>
+                {result.score}
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: 17, fontWeight: 600, color: "white", marginBottom: 4 }}>
+                {result.score >= 80 ? "🔥 Excellent listing" : result.score >= 60 ? "✅ Good listing" : "⚡ Needs improvement"}
+              </div>
+              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.5)" }}>SEO score for "{result.keyword}"</div>
+              <div style={{ display: "flex", gap: 18, marginTop: 8 }}>
+                <span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>{result.volume} searches/mo</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: compColor(result.competition) }}>{result.competition} competition</span>
+              </div>
+            </div>
+          </div>
+
+          {/* BREAKDOWN */}
+          <div className="dash-card">
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 14, background: "linear-gradient(135deg, #a78bfa 0%, #f472b6 100%)", WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent" }}>📋 Score Breakdown</div>
+            {breakdown.map((item, i) => (
+              <div key={i} style={{ display: "flex", gap: 12, padding: "10px 0", borderBottom: i < breakdown.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none" }}>
+                <span style={{ fontSize: 14, flexShrink: 0, lineHeight: 1.4, color: item.pass ? "#34d399" : "#fbbf24" }}>{item.pass ? "✓" : "⚠"}</span>
+                <span style={{ fontSize: 13, lineHeight: 1.55, color: item.pass ? "rgba(255,255,255,0.85)" : "#fbbf24" }}>{item.text}</span>
+              </div>
             ))}
-          </nav>
-          <div className="rk-upgrade">
-            <button className="rk-upgrade-btn" onClick={() => router.push("/pricing")}>↑ Upgrade Plan</button>
           </div>
-        </aside>
 
-        <div className="rk-main">
-          <div className="rk-topbar">
-            <span style={{ fontSize: 12, color: "#334155" }}>Listing Optimizer · SEO title, description & tags</span>
-          </div>
-          <div className="rk-content">
-            <div className="rk-title">⭐ Listing Optimizer</div>
-            <div className="rk-sub">Generate SEO-optimized title, description and tags — works for Etsy, Redbubble, TeePublic, Amazon Merch.</div>
-
-            <div className="rk-search-row">
-              <input className="rk-input" value={query} onChange={e => setQuery(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && handleOptimize()}
-                placeholder='Enter your product, e.g. "matcha mug", "halloween shirt", "boy mom era"' />
-              <button className="rk-btn" onClick={() => handleOptimize()} disabled={loading}>
-                {loading ? "Optimizing..." : "✨ Optimize →"}
+          {/* TITLE */}
+          <div className="dash-card">
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+              <span style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.4)", letterSpacing: "0.1em", textTransform: "uppercase" }}>Listing Title</span>
+              <button onClick={() => copyToClipboard(result.title, "title")} style={{ padding: "6px 14px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer", border: "none", fontFamily: "inherit", background: copied === "title" ? "rgba(52,211,153,0.1)" : "rgba(167,139,250,0.1)", color: copied === "title" ? "#34d399" : "#c4b5fd", transition: "all 0.2s" }}>
+                {copied === "title" ? "✓ Copied!" : "Copy"}
               </button>
             </div>
+            <div style={{ fontSize: 14, color: "rgba(255,255,255,0.85)", lineHeight: 1.6 }}>{result.title}</div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", marginTop: 10 }}>{result.title.length}/140 characters</div>
+          </div>
 
-            {!result && !loading && (
-              <div className="rk-chips">
-                {suggestions.map(s => (
-                  <button key={s} className="rk-chip" onClick={() => handleOptimize(s)}>{s}</button>
-                ))}
-              </div>
-            )}
+          {/* DESCRIPTION */}
+          <div className="dash-card">
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+              <span style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.4)", letterSpacing: "0.1em", textTransform: "uppercase" }}>Description</span>
+              <button onClick={() => copyToClipboard(result.description, "desc")} style={{ padding: "6px 14px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer", border: "none", fontFamily: "inherit", background: copied === "desc" ? "rgba(52,211,153,0.1)" : "rgba(167,139,250,0.1)", color: copied === "desc" ? "#34d399" : "#c4b5fd", transition: "all 0.2s" }}>
+                {copied === "desc" ? "✓ Copied!" : "Copy"}
+              </button>
+            </div>
+            <pre style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", lineHeight: 1.7, whiteSpace: "pre-wrap", fontFamily: "inherit", margin: 0 }}>{result.description}</pre>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", marginTop: 10 }}>{result.description.length}/2000 characters</div>
+          </div>
 
-            {loading && <div className="rk-loading"><div className="rk-spinner" /><span style={{ fontSize: 13, color: "#475569" }}>Generating optimized listing...</span></div>}
-
-            {result?.error && (
-              <div style={{ textAlign: "center", padding: 32, color: "#334155", fontSize: 13 }}>
-                No data found for "{query}" — try another keyword
-              </div>
-            )}
-
-            {result && !result.error && (
-              <div className="rk-fade">
-                <div className="rk-card" style={{ display: "flex", alignItems: "center", gap: 20 }}>
-                  <div style={{ position: "relative", width: 72, height: 72, flexShrink: 0 }}>
-                    <svg width="72" height="72" style={{ transform: "rotate(-90deg)" }} viewBox="0 0 72 72">
-                      <circle cx="36" cy="36" r="28" fill="none" stroke="rgba(129,140,248,0.15)" strokeWidth="7" />
-                      <circle cx="36" cy="36" r="28" fill="none" stroke={scoreColor} strokeWidth="7"
-                        strokeDasharray={`${result.score * 1.76} 176`} strokeLinecap="round" />
-                    </svg>
-                    <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 700, color: scoreColor }}>
-                      {result.score}
-                    </div>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 16, fontWeight: 700, color: "#f1f5f9", marginBottom: 4 }}>
-                      {result.score >= 80 ? "🔥 Excellent listing" : result.score >= 60 ? "✅ Good listing" : "⚡ Needs improvement"}
-                    </div>
-                    <div style={{ fontSize: 13, color: "#475569" }}>SEO score for "{result.keyword}"</div>
-                    <div style={{ display: "flex", gap: 16, marginTop: 6 }}>
-                      <span style={{ fontSize: 12, color: "#475569" }}>{result.volume} searches/mo</span>
-                      <span style={{ fontSize: 12, fontWeight: 600, color: compColor(result.competition) }}>{result.competition} competition</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* SCORE BREAKDOWN */}
-                <div className="rk-card">
-                  <div style={{ fontSize: 11, fontWeight: 700, color: "#a5b4fc", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 14 }}>📋 Score Breakdown</div>
-                  {breakdown.map((item, i) => (
-                    <div key={i} className="rk-breakdown-item">
-                      <span className="rk-breakdown-icon" style={{ color: item.pass ? "#34d399" : "#fbbf24" }}>{item.pass ? "✓" : "⚠"}</span>
-                      <span className="rk-breakdown-text" style={{ color: item.pass ? "#cbd5e1" : "#fbbf24" }}>{item.text}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="rk-card">
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                    <span style={{ fontSize: 11, fontWeight: 600, color: "#475569", letterSpacing: "0.07em", textTransform: "uppercase" }}>Listing Title</span>
-                    <button className="rk-copy-btn" onClick={() => copyToClipboard(result.title, "title")}
-                      style={{ background: copied === "title" ? "rgba(52,211,153,0.1)" : "rgba(99,102,241,0.1)", color: copied === "title" ? "#34d399" : "#818cf8" }}>
-                      {copied === "title" ? "✓ Copied!" : "Copy"}
-                    </button>
-                  </div>
-                  <div style={{ fontSize: 14, color: "#e2e8f0", lineHeight: 1.6 }}>{result.title}</div>
-                  <div style={{ fontSize: 11, color: "#334155", marginTop: 8 }}>{result.title.length}/140 characters</div>
-                </div>
-
-                <div className="rk-card">
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                    <span style={{ fontSize: 11, fontWeight: 600, color: "#475569", letterSpacing: "0.07em", textTransform: "uppercase" }}>Description</span>
-                    <button className="rk-copy-btn" onClick={() => copyToClipboard(result.description, "desc")}
-                      style={{ background: copied === "desc" ? "rgba(52,211,153,0.1)" : "rgba(99,102,241,0.1)", color: copied === "desc" ? "#34d399" : "#818cf8" }}>
-                      {copied === "desc" ? "✓ Copied!" : "Copy"}
-                    </button>
-                  </div>
-                  <pre style={{ fontSize: 12, color: "#64748b", lineHeight: 1.7, whiteSpace: "pre-wrap", fontFamily: "inherit" }}>{result.description}</pre>
-                  <div style={{ fontSize: 11, color: "#334155", marginTop: 8 }}>{result.description.length}/2000 characters</div>
-                </div>
-
-                <div className="rk-card">
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-                    <span style={{ fontSize: 11, fontWeight: 600, color: "#475569", letterSpacing: "0.07em", textTransform: "uppercase" }}>Tags ({result.tags.length}/13)</span>
-                    <button className="rk-copy-btn" onClick={() => copyToClipboard(result.tags.join(", "), "tags")}
-                      style={{ background: copied === "tags" ? "rgba(52,211,153,0.1)" : "rgba(99,102,241,0.1)", color: copied === "tags" ? "#34d399" : "#818cf8" }}>
-                      {copied === "tags" ? "✓ Copied!" : "Copy All"}
-                    </button>
-                  </div>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                    {result.tags.map((tag: string, i: number) => (
-                      <span key={i} style={{ padding: "5px 12px", borderRadius: 20, background: "rgba(129,140,248,0.08)", border: "1px solid rgba(129,140,248,0.2)", color: "#a5b4fc", fontSize: 12, fontWeight: 500 }}>
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {!result && !loading && (
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 200, textAlign: "center" }}>
-                <div style={{ fontSize: 36, marginBottom: 16, opacity: 0.15 }}>⭐</div>
-                <div style={{ fontSize: 15, fontWeight: 600, color: "#334155", marginBottom: 6 }}>Ready to optimize</div>
-                <div style={{ fontSize: 13, color: "#1e293b" }}>Enter your product to generate an optimized listing</div>
-              </div>
-            )}
+          {/* TAGS */}
+          <div className="dash-card">
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+              <span style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.4)", letterSpacing: "0.1em", textTransform: "uppercase" }}>Tags ({result.tags.length}/13)</span>
+              <button onClick={() => copyToClipboard(result.tags.join(", "), "tags")} style={{ padding: "6px 14px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer", border: "none", fontFamily: "inherit", background: copied === "tags" ? "rgba(52,211,153,0.1)" : "rgba(167,139,250,0.1)", color: copied === "tags" ? "#34d399" : "#c4b5fd", transition: "all 0.2s" }}>
+                {copied === "tags" ? "✓ Copied!" : "Copy All"}
+              </button>
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {result.tags.map((tag: string, i: number) => (
+                <span key={i} style={{ padding: "6px 13px", borderRadius: 999, background: "rgba(167,139,250,0.08)", border: "1px solid rgba(167,139,250,0.2)", color: "#c4b5fd", fontSize: 12, fontWeight: 500 }}>{tag}</span>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
-    </>
+      )}
+
+      {!result && !loading && (
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 240, textAlign: "center" }}>
+          <div style={{ fontSize: 44, marginBottom: 16, opacity: 0.15 }}>★</div>
+          <div style={{ fontSize: 16, fontWeight: 500, color: "rgba(255,255,255,0.5)", marginBottom: 8 }}>Ready to optimize</div>
+          <div style={{ fontSize: 13, color: "rgba(255,255,255,0.3)" }}>Enter your product to generate an optimized listing</div>
+        </div>
+      )}
+    </DashLayout>
   );
 }

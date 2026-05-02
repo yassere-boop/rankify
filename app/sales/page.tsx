@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import DashLayout from "../components/DashLayout";
 
 const PRODUCTS = [
   { name: "T-Shirt", printCost: 8.50, avgPrice: 24.99 },
@@ -12,9 +12,6 @@ const PRODUCTS = [
   { name: "Phone Case", printCost: 8.00, avgPrice: 18.99 },
 ];
 
-// ============================================
-// DYNAMIC NICHES - seasonal + evergreen
-// ============================================
 function getDynamicNiches() {
   const month = new Date().getMonth() + 1;
   const evergreen = [
@@ -41,23 +38,12 @@ function getDynamicNiches() {
 }
 
 export default function SalesEstimator() {
-  const router = useRouter();
   const NICHES = getDynamicNiches();
   const [product, setProduct] = useState(PRODUCTS[0]);
   const [niche, setNiche] = useState(NICHES[0]);
   const [sellPrice, setSellPrice] = useState(24.99);
   const [listings, setListings] = useState(10);
   const [result, setResult] = useState<any>(null);
-
-  const nav = [
-    { label: "POD Decision", path: "/dashboard", emoji: "🎯" },
-    { label: "Competition", path: "/competition", emoji: "📊" },
-    { label: "Trends", path: "/trends", emoji: "📈" },
-    { label: "Tag Generator", path: "/tags", emoji: "🏷️" },
-    { label: "Listing Optimizer", path: "/listing", emoji: "⭐" },
-    { label: "Sales Estimator", path: "/sales", emoji: "💰", active: true },
-    { label: "POD Research", path: "/pod", emoji: "🎨", badge: "NEW" },
-  ];
 
   const calculate = () => {
     const platformFee = sellPrice * 0.065 + 0.20;
@@ -71,12 +57,10 @@ export default function SalesEstimator() {
     const monthlyRevenue = (monthlySales * sellPrice).toFixed(2);
     const monthlyProfit = (monthlySales * netProfit).toFixed(2);
     const yearlyProfit = (Number(monthlyProfit) * 12).toFixed(2);
-    
-    // Calculate "if you scale" scenarios
     const scaleListings = listings * 5;
     const scaleSales = Math.max(Math.floor(estimatedVisitors * 0.02 * scaleListings * 5), 1);
     const scaleProfit = (scaleSales * netProfit).toFixed(2);
-    
+
     setResult({
       netProfit: netProfit.toFixed(2), margin, monthlySales,
       monthlyRevenue, monthlyProfit, yearlyProfit,
@@ -88,14 +72,12 @@ export default function SalesEstimator() {
 
   const ratingColor = (r: string) => r === "Excellent" ? "#34d399" : r === "Good" ? "#fbbf24" : "#f87171";
 
-  // Action plan based on result
   const getActionPlan = () => {
     if (!result) return [];
     const plan = [];
-    
     if (result.rating === "Low") {
       plan.push({ icon: "💰", text: `Raise selling price to $${(sellPrice + 5).toFixed(2)} — adds $5 per sale` });
-      plan.push({ icon: "🎯", text: `Switch to lower-competition niche (current niche has ${niche.competition}/100 competition)` });
+      plan.push({ icon: "🎯", text: `Switch to lower-competition niche (current: ${niche.competition}/100 competition)` });
       plan.push({ icon: "📦", text: `Lower-cost product: try Mug ($6.50) or Poster ($5) for better margins` });
     } else if (result.rating === "Good") {
       plan.push({ icon: "📈", text: `Scale to ${result.scaleListings} listings → est. $${result.scaleProfit}/mo profit (5x growth)` });
@@ -111,228 +93,156 @@ export default function SalesEstimator() {
 
   const actionPlan = getActionPlan();
 
-  return (
-    <>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
-        .rk { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: #0f1623; color: #cbd5e1; min-height: 100vh; display: flex; }
-        .rk-side { width: 228px; background: #111827; border-right: 1px solid rgba(255,255,255,0.07); display: flex; flex-direction: column; flex-shrink: 0; padding: 24px 14px 20px; }
-        .rk-logo { font-size: 18px; font-weight: 700; color: #f8fafc; letter-spacing: -0.03em; padding: 0 6px; margin-bottom: 8px; }
-        .rk-logo em { font-style: normal; color: #818cf8; }
-        .rk-live-row { display: flex; align-items: center; gap: 6px; padding: 0 6px; margin-bottom: 28px; }
-        .rk-dot { width: 7px; height: 7px; border-radius: 50%; background: #34d399; animation: dpulse 2s ease infinite; }
-        .rk-live-label { font-size: 11px; font-weight: 500; color: #34d399; letter-spacing: 0.04em; }
-        .rk-section-label { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.2); letter-spacing: 0.12em; text-transform: uppercase; padding: 0 6px; margin-bottom: 6px; }
-        .rk-nav { display: flex; flex-direction: column; gap: 2px; flex: 1; }
-        .rk-navbtn { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 10px; cursor: pointer; border: 1px solid transparent; background: none; color: #64748b; font-size: 13px; font-weight: 500; width: 100%; text-align: left; transition: all 0.15s; font-family: inherit; }
-        .rk-navbtn:hover { background: rgba(255,255,255,0.05); color: #e2e8f0; }
-        .rk-navbtn-active { background: rgba(129,140,248,0.12) !important; border-color: rgba(129,140,248,0.25) !important; color: #a5b4fc !important; }
-        .rk-new-badge { margin-left: auto; font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 20px; background: rgba(251,146,60,0.18); color: #fb923c; }
-        .rk-upgrade { margin-top: auto; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.06); }
-        .rk-upgrade-btn { width: 100%; padding: 10px 16px; border-radius: 10px; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; font-size: 13px; font-weight: 600; border: none; cursor: pointer; font-family: inherit; }
-        .rk-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-        .rk-topbar { height: 48px; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; padding: 0 36px; background: #0f1623; flex-shrink: 0; }
-        .rk-content { flex: 1; padding: 36px 40px; overflow-y: auto; }
-        .rk-title { font-size: 22px; font-weight: 700; color: #f1f5f9; letter-spacing: -0.025em; margin-bottom: 6px; }
-        .rk-sub { font-size: 13px; color: #475569; margin-bottom: 28px; }
-        .rk-card { background: #1e293b; border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 20px 22px; margin-bottom: 16px; }
-        .rk-card-title { font-size: 11px; font-weight: 600; color: #475569; letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 14px; }
-        .rk-pills { display: flex; flex-wrap: wrap; gap: 8px; }
-        .rk-pill { padding: 7px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid rgba(255,255,255,0.07); background: rgba(255,255,255,0.03); color: #475569; transition: all 0.12s; font-family: inherit; }
-        .rk-pill:hover { background: rgba(99,102,241,0.1); border-color: rgba(99,102,241,0.3); color: #a5b4fc; }
-        .rk-pill-active { background: rgba(99,102,241,0.15) !important; border-color: rgba(99,102,241,0.4) !important; color: #a5b4fc !important; }
-        .rk-grid2 { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; margin-bottom: 16px; }
-        .rk-input-wrap { display: flex; align-items: center; gap: 8px; }
-        .rk-input { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 10px 14px; color: #e2e8f0; font-size: 14px; outline: none; font-family: inherit; width: 120px; transition: all 0.15s; }
-        .rk-input:focus { border-color: rgba(129,140,248,0.6); }
-        .rk-calc-btn { width: 100%; padding: 14px; border-radius: 12px; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; font-size: 15px; font-weight: 700; border: none; cursor: pointer; font-family: inherit; transition: all 0.15s; margin-bottom: 20px; letter-spacing: 0.01em; }
-        .rk-calc-btn:hover { opacity: 0.9; transform: translateY(-1px); }
-        .rk-stats { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; margin-bottom: 16px; }
-        .rk-stat { background: #1e293b; border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 16px 18px; }
-        .rk-stat-label { font-size: 10px; font-weight: 600; color: #475569; letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 10px; }
-        .rk-stat-val { font-size: 22px; font-weight: 700; }
-        .rk-stat-sub { font-size: 11px; color: #475569; margin-top: 3px; }
-        .rk-big-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; margin-bottom: 16px; }
-        .rk-big-stat { background: #1e293b; border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 20px 22px; }
-        
-        /* ACTION PLAN */
-        .rk-actions { background: rgba(129,140,248,0.06); border: 1px solid rgba(129,140,248,0.2); border-radius: 14px; padding: 20px 24px; margin-top: 16px; }
-        .rk-actions-title { font-size: 11px; font-weight: 700; color: #a5b4fc; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 14px; }
-        .rk-action-item { display: flex; gap: 12px; padding: 11px 0; border-bottom: 1px solid rgba(129,140,248,0.06); }
-        .rk-action-item:last-child { border-bottom: none; }
-        .rk-action-icon { font-size: 18px; line-height: 1.3; flex-shrink: 0; }
-        .rk-action-text { font-size: 13px; color: #cbd5e1; line-height: 1.55; }
-        
-        /* FEE BREAKDOWN */
-        .rk-fees { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 16px 20px; margin-bottom: 16px; }
-        .rk-fee-row { display: flex; justify-content: space-between; padding: 7px 0; font-size: 12px; }
-        .rk-fee-label { color: #64748b; }
-        .rk-fee-val { font-weight: 600; }
-        
-        .rk-fade { animation: rkfade 0.35s ease; }
-        @keyframes rkfade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes dpulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
-      `}</style>
+  const pillStyle = (active: boolean) => ({
+    padding: "8px 16px",
+    borderRadius: 999,
+    fontSize: 12,
+    fontWeight: 600,
+    cursor: "pointer",
+    border: `1px solid ${active ? "rgba(167,139,250,0.4)" : "rgba(255,255,255,0.06)"}`,
+    background: active ? "rgba(167,139,250,0.1)" : "rgba(255,255,255,0.02)",
+    color: active ? "#c4b5fd" : "rgba(255,255,255,0.5)",
+    transition: "all 0.15s",
+    fontFamily: "inherit" as const,
+  });
 
-      <div className="rk">
-        <aside className="rk-side">
-          <div className="rk-logo">Mark<em>earn</em></div>
-          <div className="rk-live-row"><div className="rk-dot" /><span className="rk-live-label">Live data</span></div>
-          <div className="rk-section-label">Tools</div>
-          <nav className="rk-nav">
-            {nav.map(item => (
-              <button key={item.path} onClick={() => router.push(item.path)}
-                className={`rk-navbtn ${item.active ? "rk-navbtn-active" : ""}`}>
-                <span style={{ fontSize: 14, width: 20, textAlign: "center" }}>{item.emoji}</span>
-                <span>{item.label}</span>
-                {item.badge && <span className="rk-new-badge">{item.badge}</span>}
+  return (
+    <DashLayout topbarLabel="Sales Estimator · POD profit calculator">
+      <div className="dash-hero-title">Sales <em>estimator.</em></div>
+      <div className="dash-hero-sub">Estimate your monthly sales, profit & action plan to reach those numbers.</div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16, marginBottom: 16 }}>
+        <div className="dash-card" style={{ marginBottom: 0 }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.4)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 14 }}>Product Type</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+            {PRODUCTS.map((p) => (
+              <button key={p.name} onClick={() => { setProduct(p); setSellPrice(p.avgPrice); }} style={pillStyle(product.name === p.name)}>
+                {p.name} · ${p.printCost}
               </button>
             ))}
-          </nav>
-          <div className="rk-upgrade">
-            <button className="rk-upgrade-btn" onClick={() => router.push("/pricing")}>↑ Upgrade Plan</button>
           </div>
-        </aside>
-
-        <div className="rk-main">
-          <div className="rk-topbar">
-            <span style={{ fontSize: 12, color: "#334155" }}>Sales Estimator · POD profit calculator</span>
-          </div>
-          <div className="rk-content">
-            <div className="rk-title">💰 Sales Estimator</div>
-            <div className="rk-sub">Estimate your monthly sales, profit & action plan to reach those numbers.</div>
-
-            <div className="rk-grid2">
-              <div className="rk-card">
-                <div className="rk-card-title">Product Type</div>
-                <div className="rk-pills">
-                  {PRODUCTS.map(p => (
-                    <button key={p.name} onClick={() => { setProduct(p); setSellPrice(p.avgPrice); }}
-                      className={`rk-pill ${product.name === p.name ? "rk-pill-active" : ""}`}>
-                      {p.name} · ${p.printCost}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="rk-card">
-                <div className="rk-card-title">Niche (current season)</div>
-                <div className="rk-pills">
-                  {NICHES.map(n => (
-                    <button key={n.name} onClick={() => setNiche(n)}
-                      className={`rk-pill ${niche.name === n.name ? "rk-pill-active" : ""}`}>
-                      {n.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="rk-grid2">
-              <div className="rk-card">
-                <div className="rk-card-title">Selling Price</div>
-                <div className="rk-input-wrap">
-                  <span style={{ color: "#475569", fontSize: 16 }}>$</span>
-                  <input type="number" value={sellPrice} onChange={e => setSellPrice(Number(e.target.value))} className="rk-input" />
-                </div>
-              </div>
-              <div className="rk-card">
-                <div className="rk-card-title">Number of Listings</div>
-                <div className="rk-pills">
-                  {[5, 10, 25, 50, 100].map(n => (
-                    <button key={n} onClick={() => setListings(n)}
-                      className={`rk-pill ${listings === n ? "rk-pill-active" : ""}`}>
-                      {n}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <button className="rk-calc-btn" onClick={calculate}>
-              Calculate My Potential 🚀
-            </button>
-
-            {result && (
-              <div className="rk-fade">
-                <div className="rk-stats">
-                  {[
-                    { label: "Profit/Sale", value: `$${result.netProfit}`, sub: `${result.margin}% margin`, color: "#34d399" },
-                    { label: "Est. Monthly Sales", value: result.monthlySales, sub: `${listings} listings`, color: "#e2e8f0" },
-                    { label: "Monthly Revenue", value: `$${result.monthlyRevenue}`, sub: "gross", color: "#e2e8f0" },
-                    { label: "Monthly Profit", value: `$${result.monthlyProfit}`, sub: "after all fees", color: "#34d399" },
-                  ].map((s, i) => (
-                    <div key={i} className="rk-stat">
-                      <div className="rk-stat-label">{s.label}</div>
-                      <div className="rk-stat-val" style={{ color: s.color }}>{s.value}</div>
-                      <div className="rk-stat-sub">{s.sub}</div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* FEE BREAKDOWN */}
-                <div className="rk-fees">
-                  <div style={{ fontSize: 10, fontWeight: 700, color: "#475569", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 10 }}>💳 Fee Breakdown (per sale)</div>
-                  <div className="rk-fee-row"><span className="rk-fee-label">Selling price</span><span className="rk-fee-val" style={{ color: "#e2e8f0" }}>+${sellPrice}</span></div>
-                  <div className="rk-fee-row"><span className="rk-fee-label">{product.name} print cost (Printify)</span><span className="rk-fee-val" style={{ color: "#f87171" }}>-${product.printCost}</span></div>
-                  <div className="rk-fee-row"><span className="rk-fee-label">Platform fee (6.5% + $0.20)</span><span className="rk-fee-val" style={{ color: "#f87171" }}>-${result.platformFee}</span></div>
-                  <div className="rk-fee-row"><span className="rk-fee-label">Payment fee (3% + $0.25)</span><span className="rk-fee-val" style={{ color: "#f87171" }}>-${result.paymentFee}</span></div>
-                  <div className="rk-fee-row" style={{ borderTop: "1px solid rgba(255,255,255,0.08)", marginTop: 6, paddingTop: 10 }}>
-                    <span style={{ color: "#cbd5e1", fontWeight: 700 }}>Net profit per sale</span>
-                    <span className="rk-fee-val" style={{ color: "#34d399", fontSize: 14 }}>${result.netProfit}</span>
-                  </div>
-                </div>
-
-                <div className="rk-big-grid">
-                  <div className="rk-big-stat">
-                    <div className="rk-stat-label">Yearly Profit Potential</div>
-                    <div style={{ fontSize: 32, fontWeight: 700, color: "#a5b4fc", marginTop: 8 }}>${result.yearlyProfit}</div>
-                    <div className="rk-stat-sub" style={{ marginTop: 4 }}>if sales stay consistent</div>
-                  </div>
-                  <div className="rk-big-stat">
-                    <div className="rk-stat-label">Overall Rating</div>
-                    <div style={{ fontSize: 32, fontWeight: 700, color: ratingColor(result.rating), marginTop: 8 }}>{result.rating}</div>
-                    <div className="rk-stat-sub" style={{ marginTop: 4 }}>based on margin & volume</div>
-                  </div>
-                </div>
-
-                <div style={{
-                  borderRadius: 14, padding: "16px 22px", marginBottom: 16,
-                  background: result.rating === "Excellent" ? "rgba(52,211,153,0.06)" : result.rating === "Good" ? "rgba(251,191,36,0.06)" : "rgba(248,113,113,0.06)",
-                  border: `1px solid ${result.rating === "Excellent" ? "rgba(52,211,153,0.2)" : result.rating === "Good" ? "rgba(251,191,36,0.2)" : "rgba(248,113,113,0.2)"}`,
-                }}>
-                  <div style={{ fontWeight: 700, color: ratingColor(result.rating), marginBottom: 6, fontSize: 14 }}>
-                    {result.rating === "Excellent" ? "✅ Great opportunity!" : result.rating === "Good" ? "⚠️ Decent opportunity" : "❌ Low potential"}
-                  </div>
-                  <div style={{ fontSize: 13, color: "#64748b", lineHeight: 1.6 }}>
-                    {result.rating === "Excellent"
-                      ? `${product.name} in ${niche.name} niche looks very profitable. Upload ${listings} listings and expect strong returns.`
-                      : result.rating === "Good"
-                      ? `Decent potential. Consider raising your price by $2-5 or adding more listings to increase returns.`
-                      : `Margins are thin or competition is too high. Try a different niche or product type.`}
-                  </div>
-                </div>
-
-                {/* ACTION PLAN */}
-                <div className="rk-actions">
-                  <div className="rk-actions-title">🎯 Action Plan to Reach These Numbers</div>
-                  {actionPlan.map((a, i) => (
-                    <div key={i} className="rk-action-item">
-                      <span className="rk-action-icon">{a.icon}</span>
-                      <span className="rk-action-text">{a.text}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {!result && (
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 120, textAlign: "center" }}>
-                <div style={{ fontSize: 13, color: "#334155" }}>Select your product, niche and price then click Calculate</div>
-              </div>
-            )}
+        </div>
+        <div className="dash-card" style={{ marginBottom: 0 }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.4)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 14 }}>Niche (current season)</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+            {NICHES.map((n) => (
+              <button key={n.name} onClick={() => setNiche(n)} style={pillStyle(niche.name === n.name)}>{n.name}</button>
+            ))}
           </div>
         </div>
       </div>
-    </>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16, marginBottom: 16 }}>
+        <div className="dash-card" style={{ marginBottom: 0 }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.4)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 14 }}>Selling Price</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 18 }}>$</span>
+            <input type="number" value={sellPrice} onChange={(e) => setSellPrice(Number(e.target.value))} style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 10, padding: "10px 14px", color: "white", fontSize: 14, outline: "none", fontFamily: "inherit", width: 130 }} />
+          </div>
+        </div>
+        <div className="dash-card" style={{ marginBottom: 0 }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.4)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 14 }}>Number of Listings</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+            {[5, 10, 25, 50, 100].map((n) => (
+              <button key={n} onClick={() => setListings(n)} style={pillStyle(listings === n)}>{n}</button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <button onClick={calculate} style={{ width: "100%", padding: "16px", borderRadius: 14, background: "white", color: "black", fontSize: 15, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "inherit", marginBottom: 24, transition: "all 0.2s" }}>
+        Calculate My Potential 🚀
+      </button>
+
+      {result && (
+        <div className="fade-up">
+          {/* MAIN STATS */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 16 }}>
+            {[
+              { label: "Profit/Sale", value: `$${result.netProfit}`, sub: `${result.margin}% margin`, color: "#34d399" },
+              { label: "Est. Monthly Sales", value: result.monthlySales, sub: `${listings} listings`, color: "white" },
+              { label: "Monthly Revenue", value: `$${result.monthlyRevenue}`, sub: "gross", color: "white" },
+              { label: "Monthly Profit", value: `$${result.monthlyProfit}`, sub: "after all fees", color: "#34d399" },
+            ].map((s, i) => (
+              <div key={i} className="dash-card" style={{ marginBottom: 0 }}>
+                <div style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.35)", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 }}>{s.label}</div>
+                <div className="serif" style={{ fontSize: 28, color: s.color, lineHeight: 1 }}>{s.value}</div>
+                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 6 }}>{s.sub}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* FEE BREAKDOWN */}
+          <div className="dash-card">
+            <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.4)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 12 }}>💳 Fee Breakdown (per sale)</div>
+            {[
+              { label: "Selling price", value: `+$${sellPrice}`, color: "white" },
+              { label: `${product.name} print cost (Printify)`, value: `-$${product.printCost}`, color: "#f87171" },
+              { label: "Platform fee (6.5% + $0.20)", value: `-$${result.platformFee}`, color: "#f87171" },
+              { label: "Payment fee (3% + $0.25)", value: `-$${result.paymentFee}`, color: "#f87171" },
+            ].map((row, i) => (
+              <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "9px 0", fontSize: 13 }}>
+                <span style={{ color: "rgba(255,255,255,0.5)" }}>{row.label}</span>
+                <span style={{ fontWeight: 600, color: row.color }}>{row.value}</span>
+              </div>
+            ))}
+            <div style={{ display: "flex", justifyContent: "space-between", padding: "12px 0 0", borderTop: "1px solid rgba(255,255,255,0.06)", marginTop: 6 }}>
+              <span style={{ color: "white", fontWeight: 600, fontSize: 14 }}>Net profit per sale</span>
+              <span className="serif" style={{ color: "#34d399", fontSize: 22, lineHeight: 1 }}>${result.netProfit}</span>
+            </div>
+          </div>
+
+          {/* BIG STATS */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12, marginBottom: 16 }}>
+            <div className="dash-card" style={{ marginBottom: 0 }}>
+              <div style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.35)", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 }}>Yearly Profit Potential</div>
+              <div className="serif" style={{ fontSize: 42, color: "#c4b5fd", lineHeight: 1 }}>${result.yearlyProfit}</div>
+              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 8 }}>if sales stay consistent</div>
+            </div>
+            <div className="dash-card" style={{ marginBottom: 0 }}>
+              <div style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.35)", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 }}>Overall Rating</div>
+              <div className="serif" style={{ fontSize: 42, color: ratingColor(result.rating), lineHeight: 1 }}>{result.rating}</div>
+              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 8 }}>based on margin & volume</div>
+            </div>
+          </div>
+
+          {/* RATING BANNER */}
+          <div style={{
+            borderRadius: 14, padding: "16px 22px", marginBottom: 16,
+            background: result.rating === "Excellent" ? "rgba(52,211,153,0.06)" : result.rating === "Good" ? "rgba(251,191,36,0.06)" : "rgba(248,113,113,0.06)",
+            border: `1px solid ${result.rating === "Excellent" ? "rgba(52,211,153,0.2)" : result.rating === "Good" ? "rgba(251,191,36,0.2)" : "rgba(248,113,113,0.2)"}`,
+            backdropFilter: "blur(12px)",
+          }}>
+            <div style={{ fontWeight: 700, color: ratingColor(result.rating), marginBottom: 6, fontSize: 14 }}>
+              {result.rating === "Excellent" ? "✅ Great opportunity!" : result.rating === "Good" ? "⚠️ Decent opportunity" : "❌ Low potential"}
+            </div>
+            <div style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", lineHeight: 1.6 }}>
+              {result.rating === "Excellent"
+                ? `${product.name} in ${niche.name} niche looks very profitable. Upload ${listings} listings and expect strong returns.`
+                : result.rating === "Good"
+                ? `Decent potential. Consider raising your price by $2-5 or adding more listings to increase returns.`
+                : `Margins are thin or competition is too high. Try a different niche or product type.`}
+            </div>
+          </div>
+
+          {/* ACTION PLAN */}
+          <div style={{ background: "rgba(167,139,250,0.04)", border: "1px solid rgba(167,139,250,0.2)", borderRadius: 16, padding: "20px 26px", backdropFilter: "blur(12px)" }}>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 14, background: "linear-gradient(135deg, #a78bfa 0%, #f472b6 100%)", WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent" }}>🎯 Action Plan to Reach These Numbers</div>
+            {actionPlan.map((a, i) => (
+              <div key={i} style={{ display: "flex", gap: 14, padding: "12px 0", borderBottom: i < actionPlan.length - 1 ? "1px solid rgba(167,139,250,0.06)" : "none" }}>
+                <span style={{ fontSize: 18, lineHeight: 1.3, flexShrink: 0 }}>{a.icon}</span>
+                <span style={{ fontSize: 13, color: "rgba(255,255,255,0.85)", lineHeight: 1.55 }}>{a.text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {!result && (
+        <div style={{ textAlign: "center", padding: 40, color: "rgba(255,255,255,0.3)", fontSize: 13 }}>
+          Select your product, niche and price then click Calculate
+        </div>
+      )}
+    </DashLayout>
   );
 }
