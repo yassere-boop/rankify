@@ -64,7 +64,7 @@ export async function POST(req: Request) {
       }
 
       const trialEnds = new Date();
-      trialEnds.setDate(trialEnds.getDate() + 1);
+      trialEnds.setDate(trialEnds.getDate() + 7);
 
       const { error } = await supabaseAdmin.from("users").insert({
         clerk_id: id,
