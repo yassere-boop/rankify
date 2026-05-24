@@ -82,19 +82,23 @@ export async function POST(req: NextRequest) {
       });
 
     // ============================================
-    // FALLBACK : si pas de data, on génère un résultat estimé
-    // (typiquement pour niches trendy/new comme "boy mom era")
+    // FALLBACK : si pas de data, on génère un résultat ESTIMÉ et STABLE
+    // (hash déterministe : même niche = toujours le même résultat)
     // ============================================
     if (related.length === 0) {
-      const estimatedVol = Math.floor(Math.random() * 3000) + 500;
-      const estimatedComp = Math.floor(Math.random() * 40) + 20; // Low-Medium
-      
+      let hash = 0;
+      for (let i = 0; i < keyword.length; i++) {
+        hash = (hash * 31 + keyword.charCodeAt(i)) >>> 0;
+      }
+      const estimatedVol = (hash % 3000) + 500;
+      const estimatedComp = (hash % 40) + 20;
+
       const fallbackRelated = [
         { kw: keyword, vol: isPro ? estimatedVol.toLocaleString() : "••••", comp: "Low", trend: "↑ Trending", rawVol: estimatedVol, rawComp: estimatedComp },
         { kw: `${keyword} shirt`, vol: isPro ? Math.floor(estimatedVol * 0.7).toLocaleString() : "••••", comp: "Low", trend: "↑ Trending", rawVol: Math.floor(estimatedVol * 0.7), rawComp: estimatedComp },
         { kw: `${keyword} gift`, vol: isPro ? Math.floor(estimatedVol * 0.5).toLocaleString() : "••••", comp: "Low", trend: "↑ Trending", rawVol: Math.floor(estimatedVol * 0.5), rawComp: estimatedComp },
       ];
-      
+
       return NextResponse.json({
         volume: isPro ? `~${Math.round(estimatedVol / 100) / 10}K` : "••••",
         competition: "Low",
@@ -104,7 +108,7 @@ export async function POST(req: NextRequest) {
         related: fallbackRelated,
         isPro,
         plan: user.plan,
-        isEstimated: true, // flag pour info
+        isEstimated: true,
       });
     }
 
@@ -123,6 +127,7 @@ export async function POST(req: NextRequest) {
       related: isPro ? related.slice(0, 10) : related.slice(0, 3),
       isPro,
       plan: user.plan,
+      isEstimated: false,
     });
   } catch (error) {
     return NextResponse.json({ error: "Failed to fetch" }, { status: 500 });
