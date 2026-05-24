@@ -26,8 +26,17 @@ function getDynamicChips(): string[] {
   return [...(seasonal[month] || []), trending[week % 5], trending[(week + 1) % 5]].slice(0, 8);
 }
 
+function parseVolume(volume: string): number {
+  if (!volume) return 0;
+  const clean = volume.replace(/[~,\s]/g, "").toUpperCase();
+  const num = parseFloat(clean.replace(/[^0-9.]/g, "")) || 0;
+  if (clean.includes("M")) return num * 1_000_000;
+  if (clean.includes("K")) return num * 1_000;
+  return num;
+}
+
 function calculateScore(volume: string, competition: string, trend: string): number {
-  const vol = parseInt(volume?.replace(/[^0-9]/g, "") || "0");
+  const vol = parseVolume(volume);
   let score = 50;
   if (vol > 10000) score += 20;
   else if (vol > 5000) score += 15;
