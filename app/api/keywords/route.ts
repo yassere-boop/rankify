@@ -4,6 +4,13 @@ import { supabaseAdmin } from "@/lib/supabase";
 
 const PRO_PLANS = ["pro", "agency"];
 
+const PLAN_LIMITS: Record<string, number> = {
+  trial: 10,
+  starter: 100,
+  pro: 500,
+  agency: 999999,
+};
+
 export async function POST(req: NextRequest) {
   const { userId } = await auth();
   if (!userId) {
@@ -12,13 +19,33 @@ export async function POST(req: NextRequest) {
 
   const { data: user, error } = await supabaseAdmin
     .from("users")
-    .select("plan")
+    .select("*")
     .eq("clerk_id", userId)
     .single();
 
   if (error || !user) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
+
+  // Trial expiré ?
+  if (user.plan === "trial" && user.trial_ends_at) {
+    const trialEnd = new Date(user.trial_ends_at);
+    if (new Date() > trialEnd) {
+      return NextResponse.json({ error: "trial_expired", message: "Your free trial has expired. Please upgrade to continue." }, { status: 403 });
+    }
+  }
+
+  // Limite atteinte ?
+  const limit = PLAN_LIMITS[user.plan] || 10;
+  if (user.searches_used >= limit) {
+    return NextResponse.json({ error: "limit_reached", message: `You've reached your ${limit} searches limit. Upgrade to continue.`, plan: user.plan }, { status: 403 });
+  }
+
+  // Incrémenter le compteur
+  await supabaseAdmin
+    .from("users")
+    .update({ searches_used: user.searches_used + 1 })
+    .eq("clerk_id", userId);
 
   const { keyword } = await req.json();
   const isPro = PRO_PLANS.includes(user.plan);
@@ -81,10 +108,9 @@ export async function POST(req: NextRequest) {
         };
       });
 
-    // ============================================
-    // FALLBACK : si pas de data, on génère un résultat ESTIMÉ et STABLE
-    // (hash déterministe : même niche = toujours le même résultat)
-    // ============================================
+    const searchesLeft = limit - (user.searches_used + 1);
+
+    // FALLBACK : pas de data → résultat ESTIMÉ et STABLE (hash déterministe)
     if (related.length === 0) {
       let hash = 0;
       for (let i = 0; i < keyword.length; i++) {
@@ -109,6 +135,7 @@ export async function POST(req: NextRequest) {
         isPro,
         plan: user.plan,
         isEstimated: true,
+        searchesLeft,
       });
     }
 
@@ -128,6 +155,7 @@ export async function POST(req: NextRequest) {
       isPro,
       plan: user.plan,
       isEstimated: false,
+      searchesLeft,
     });
   } catch (error) {
     return NextResponse.json({ error: "Failed to fetch" }, { status: 500 });
