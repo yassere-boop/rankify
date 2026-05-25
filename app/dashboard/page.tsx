@@ -1,9 +1,7 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-
-const LIVE = ["2,847 sellers online now", "143 searches this minute", "89 listings optimized today", "1,204 tags generated today"];
+import DashLayout from "../components/DashLayout";
 
 function getDynamicChips(): string[] {
   const month = new Date().getMonth() + 1;
@@ -66,17 +64,8 @@ function getPODVerdict(score: number, keyword: string, isEstimated: boolean) {
     return {
       verdict: "Great POD Opportunity", emoji: "✅", color: "#34d399",
       bg: "rgba(52,211,153,0.06)", border: "rgba(52,211,153,0.2)", warning: null,
-      reasons: [
-        "Solid demand — active buyers in this niche",
-        "Competition is manageable with the right angle",
-        "Personalizable and differentiable niche",
-      ],
-      design: [
-        `${keyword} with humorous or motivational quote`,
-        `${keyword} + event (birthday, Christmas, Mother's Day)`,
-        `Premium minimalist designs with ${keyword}`,
-        `${keyword} + secondary profession or hobby`,
-      ],
+      reasons: ["Solid demand — active buyers in this niche", "Competition is manageable with the right angle", "Personalizable and differentiable niche"],
+      design: [`${keyword} with humorous or motivational quote`, `${keyword} + event (birthday, Christmas, Mother's Day)`, `Premium minimalist designs with ${keyword}`, `${keyword} + secondary profession or hobby`],
       avoid: ["Too generic designs", "Copying bestsellers without a unique angle"],
       showAlternatives: false,
     };
@@ -84,18 +73,9 @@ function getPODVerdict(score: number, keyword: string, isEstimated: boolean) {
   if (score >= 40) {
     return {
       verdict: "Possible — only if you niche down.", emoji: "⚠️", color: "#fbbf24",
-      bg: "rgba(251,191,36,0.06)", border: "rgba(251,191,36,0.2)",
-      warning: "We recommend this ONLY if you niche down.",
-      reasons: [
-        "Moderate demand — works best as a targeted micro-niche",
-        "Profitable only with a specific angle or personalization",
-        "Differentiation is your main weapon here",
-      ],
-      design: [
-        `Micro-niche: ${keyword} + profession / breed / region`,
-        `${keyword} with humor or a unique quote`,
-        `Personalized with name or date`,
-      ],
+      bg: "rgba(251,191,36,0.06)", border: "rgba(251,191,36,0.2)", warning: "We recommend this ONLY if you niche down.",
+      reasons: ["Moderate demand — works best as a targeted micro-niche", "Profitable only with a specific angle or personalization", "Differentiation is your main weapon here"],
+      design: [`Micro-niche: ${keyword} + profession / breed / region`, `${keyword} with humor or a unique quote`, `Personalized with name or date`],
       avoid: ["Generic designs on this keyword", "No personalization", "Pricing too low against big sellers"],
       showAlternatives: true,
     };
@@ -103,11 +83,7 @@ function getPODVerdict(score: number, keyword: string, isEstimated: boolean) {
   return {
     verdict: "Avoid for POD", emoji: "🚫", color: "#f87171",
     bg: "rgba(248,113,113,0.06)", border: "rgba(248,113,113,0.2)", warning: null,
-    reasons: [
-      "Low demand and/or extreme saturation",
-      "Very hard to differentiate or rank",
-      "Margins likely crushed by competition",
-    ],
+    reasons: ["Low demand and/or extreme saturation", "Very hard to differentiate or rank", "Margins likely crushed by competition"],
     design: [],
     avoid: ["Designs without a specific angle", "Generic text without humor or niche", "Copying existing bestsellers"],
     showAlternatives: true,
@@ -170,14 +146,8 @@ export default function Dashboard() {
   const [noResult, setNoResult] = useState(false);
   const [searched, setSearched] = useState("");
   const [limitError, setLimitError] = useState("");
-  const [liveIdx, setLiveIdx] = useState(0);
   const [showData, setShowData] = useState(false);
   const [copied, setCopied] = useState(false);
-
-  useEffect(() => {
-    const t = setInterval(() => setLiveIdx((i) => (i + 1) % LIVE.length), 3500);
-    return () => clearInterval(t);
-  }, []);
 
   async function handleAnalyze(kw?: string) {
     const q = (kw || query).trim();
@@ -199,16 +169,6 @@ export default function Dashboard() {
     setLoading(false);
   }
 
-  const nav = [
-    { label: "POD Decision", path: "/dashboard", icon: "◎", active: true },
-    { label: "Competition", path: "/competition", icon: "▦" },
-    { label: "Trends", path: "/trends", icon: "↗" },
-    { label: "Tag Generator", path: "/tags", icon: "✦" },
-    { label: "Listing Optimizer", path: "/listing", icon: "★" },
-    { label: "Sales Estimator", path: "/sales", icon: "$" },
-    { label: "POD Research", path: "/pod", icon: "◈", badge: "NEW" },
-  ];
-
   const chips = getDynamicChips();
   const score = result ? calculateScore(result.volume, result.competition, result.trend) : 0;
   const verdict = result ? getPODVerdict(score, searched, result.isEstimated || false) : null;
@@ -217,60 +177,10 @@ export default function Dashboard() {
   const designBrief = result && verdict && verdict.verdict !== "Avoid for POD" ? generateDesignBrief(searched, verdict.verdict) : null;
 
   return (
-    <>
+    <DashLayout topbarLabel="Markearn · Real-time POD decisions">
       <style jsx global>{`
-        @import url("https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap");
-        body { font-family: "Inter", system-ui, sans-serif; background: #08090d; color: #e2e8f0; }
-        .serif { font-family: "Instrument Serif", serif; font-style: italic; letter-spacing: -0.02em; }
-        .mono { font-family: "JetBrains Mono", monospace; }
-        .gradient-text { background: linear-gradient(135deg, #ffffff 0%, #ffffff 40%, #94a3b8 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
-        .gradient-accent { background: linear-gradient(135deg, #a78bfa 0%, #f472b6 50%, #fb923c 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
-        .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.06); }
-        @keyframes meshFloat { 0%, 100% { transform: translate(0, 0) scale(1); } 33% { transform: translate(30px, -50px) scale(1.05); } 66% { transform: translate(-20px, 20px) scale(0.95); } }
-        @keyframes pulseSoft { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-        .mesh-1 { animation: meshFloat 25s ease-in-out infinite; }
-        .verdict-pulse { animation: pulseSoft 2.5s ease-in-out infinite; }
-        .fade-up { animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-        .dash { min-height: 100vh; display: flex; position: relative; }
-        .dash-mesh { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
-        .dash-side { width: 240px; background: rgba(8, 9, 13, 0.7); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-right: 1px solid rgba(255, 255, 255, 0.04); display: flex; flex-direction: column; flex-shrink: 0; padding: 24px 16px 20px; position: relative; z-index: 10; }
-        .dash-logo { display: flex; align-items: center; gap: 8px; padding: 0 8px; margin-bottom: 4px; }
-        .dash-logo-icon { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #a78bfa 0%, #f472b6 100%); font-weight: 700; color: white; font-size: 14px; }
-        .dash-logo-text { font-size: 16px; font-weight: 600; letter-spacing: -0.02em; color: white; }
-        .dash-logo-text em { font-style: normal; color: rgba(255, 255, 255, 0.6); font-weight: 400; }
-        .dash-live-row { display: flex; align-items: center; gap: 8px; padding: 0 8px; margin: 16px 0 24px; }
-        .dash-dot { width: 6px; height: 6px; border-radius: 50%; background: #34d399; }
-        .dash-live-label { font-size: 11px; font-weight: 500; color: rgba(52, 211, 153, 0.8); letter-spacing: 0.04em; }
-        .dash-section-label { font-size: 10px; font-weight: 600; color: rgba(255, 255, 255, 0.25); letter-spacing: 0.15em; text-transform: uppercase; padding: 0 8px; margin-bottom: 8px; }
-        .dash-nav { display: flex; flex-direction: column; gap: 2px; flex: 1; }
-        .dash-navbtn { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 10px; cursor: pointer; border: 1px solid transparent; background: none; color: rgba(255, 255, 255, 0.5); font-size: 13px; font-weight: 500; width: 100%; text-align: left; transition: all 0.2s; font-family: inherit; }
-        .dash-navbtn:hover { background: rgba(255, 255, 255, 0.04); color: rgba(255, 255, 255, 0.9); }
-        .dash-navbtn-active { background: rgba(167, 139, 250, 0.08); border-color: rgba(167, 139, 250, 0.2); color: #ddd6fe !important; }
-        .dash-nav-icon { font-size: 14px; width: 18px; text-align: center; opacity: 0.7; }
-        .dash-new-badge { margin-left: auto; font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 999px; background: linear-gradient(135deg, #a78bfa 0%, #f472b6 100%); color: white; letter-spacing: 0.05em; }
-        .dash-upgrade { margin-top: auto; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.04); }
-        .dash-upgrade-btn { width: 100%; padding: 11px 16px; border-radius: 10px; background: white; color: black; font-size: 13px; font-weight: 600; border: none; cursor: pointer; font-family: inherit; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
-        .dash-upgrade-btn:hover { transform: translateY(-1px); box-shadow: 0 12px 24px -8px rgba(167, 139, 250, 0.3); }
-        .dash-main { flex: 1; display: flex; flex-direction: column; min-width: 0; position: relative; z-index: 5; }
-        .dash-topbar { height: 52px; border-bottom: 1px solid rgba(255, 255, 255, 0.04); display: flex; align-items: center; justify-content: space-between; padding: 0 40px; background: rgba(8, 9, 13, 0.5); backdrop-filter: blur(20px); flex-shrink: 0; }
-        .dash-content { flex: 1; padding: 40px 48px; overflow-y: auto; max-width: 1100px; width: 100%; margin: 0 auto; }
-        .dash-hero-title { font-size: 32px; font-weight: 600; color: white; letter-spacing: -0.025em; margin-bottom: 6px; line-height: 1.1; }
-        .dash-hero-title em { font-family: "Instrument Serif", serif; font-style: italic; background: linear-gradient(135deg, #a78bfa 0%, #f472b6 50%, #fb923c 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
-        .dash-hero-sub { font-size: 14px; color: rgba(255, 255, 255, 0.5); margin-bottom: 32px; font-weight: 300; }
-        .dash-search-row { display: flex; gap: 10px; margin-bottom: 16px; }
-        .dash-input { flex: 1; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 15px 20px; color: white; font-size: 14px; outline: none; font-family: inherit; transition: all 0.2s; backdrop-filter: blur(12px); }
-        .dash-input::placeholder { color: rgba(255, 255, 255, 0.25); }
-        .dash-input:focus { border-color: rgba(167, 139, 250, 0.4); background: rgba(255, 255, 255, 0.05); box-shadow: 0 0 0 4px rgba(167, 139, 250, 0.06); }
-        .dash-btn { background: white; color: black; border: none; border-radius: 14px; padding: 15px 28px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; white-space: nowrap; transition: all 0.2s; display: flex; align-items: center; gap: 6px; }
-        .dash-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 12px 24px -8px rgba(167, 139, 250, 0.4); }
-        .dash-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-        .dash-chips { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 40px; }
-        .dash-chip { padding: 7px 14px; border-radius: 999px; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.06); color: rgba(255, 255, 255, 0.55); font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.15s; font-family: inherit; }
-        .dash-chip:hover { background: rgba(167, 139, 250, 0.08); border-color: rgba(167, 139, 250, 0.25); color: #c4b5fd; }
         .dash-verdict { border-radius: 20px; padding: 28px 32px; margin-bottom: 20px; display: flex; gap: 28px; align-items: stretch; backdrop-filter: blur(12px); }
-        .dash-verdict-left { flex: 1; }
+        .dash-verdict-left { flex: 1; min-width: 0; }
         .dash-verdict-header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
         .dash-verdict-emoji { font-size: 28px; }
         .dash-verdict-tag { font-size: 10px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 4px; opacity: 0.8; }
@@ -312,321 +222,268 @@ export default function Dashboard() {
         table.dt td { padding: 13px 24px; font-size: 13px; border-bottom: 1px solid rgba(255, 255, 255, 0.03); }
         table.dt tr:last-child td { border-bottom: none; }
         table.dt tr:hover td { background: rgba(255, 255, 255, 0.02); }
-        .dash-error-box { background: rgba(239, 68, 68, 0.06); border: 1px solid rgba(239, 68, 68, 0.15); border-radius: 14px; padding: 18px 22px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; gap: 12px; backdrop-filter: blur(12px); }
-        .dash-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 220px; gap: 20px; }
-        .dash-spinner { width: 36px; height: 36px; border: 2px solid rgba(167, 139, 250, 0.15); border-top-color: #a78bfa; border-radius: 50%; animation: spin 0.8s linear infinite; }
-        .dash-result-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.04); }
+        .dash-result-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.04); flex-wrap: wrap; gap: 10px; }
         @media (max-width: 900px) {
-          .dash-side { display: none; }
-          .dash-content { padding: 24px 20px; }
           .dash-verdict { flex-direction: column; }
           .dash-verdict-score { border-left: none; border-top: 1px solid rgba(255, 255, 255, 0.06); padding-top: 18px; }
           .dash-alts-grid, .dash-stats, .dash-design-grid { grid-template-columns: 1fr; }
         }
       `}</style>
-      <div className="dash">
-        <div className="dash-mesh">
-          <div className="mesh-1 absolute -top-40 -left-40 w-[500px] h-[500px] rounded-full opacity-30"
-            style={{ background: "radial-gradient(circle, rgba(167,139,250,0.4) 0%, rgba(167,139,250,0) 70%)", filter: "blur(80px)" }} />
-          <div className="mesh-1 absolute top-1/2 -right-40 w-[400px] h-[400px] rounded-full opacity-20"
-            style={{ background: "radial-gradient(circle, rgba(244,114,182,0.4) 0%, rgba(244,114,182,0) 70%)", filter: "blur(80px)", animationDelay: "8s" }} />
-        </div>
 
-        <aside className="dash-side">
-          <Link href="/" className="dash-logo" style={{ textDecoration: "none" }}>
-            <div className="dash-logo-icon">M</div>
-            <span className="dash-logo-text">Mark<em>earn</em></span>
-          </Link>
-          <div className="dash-live-row">
-            <div className="dash-dot verdict-pulse" />
-            <span className="dash-live-label">Live data</span>
-          </div>
-          <div className="dash-section-label">Tools</div>
-          <nav className="dash-nav">
-            {nav.map((item) => (
-              <button key={item.path} onClick={() => router.push(item.path)} className={`dash-navbtn ${item.active ? "dash-navbtn-active" : ""}`}>
-                <span className="dash-nav-icon">{item.icon}</span>
-                <span>{item.label}</span>
-                {item.badge && <span className="dash-new-badge">{item.badge}</span>}
-              </button>
-            ))}
-          </nav>
-          <div className="dash-upgrade">
-            <button className="dash-upgrade-btn" onClick={() => router.push("/pricing")}>
-              <span>↑</span>Upgrade Plan
-            </button>
-          </div>
-        </aside>
+      <div className="dash-hero-title">Stop designing <em>blind.</em></div>
+      <div className="dash-hero-sub">One verdict. Zero noise. Get a clear POD decision in under 10 seconds.</div>
 
-        <div className="dash-main">
-          <div className="dash-topbar">
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <div className="dash-dot verdict-pulse" style={{ background: "#fbbf24" }} />
-              <span style={{ fontSize: 12, color: "rgba(255,255,255,0.45)" }}>{LIVE[liveIdx]}</span>
-            </div>
-            <span style={{ fontSize: 11, color: "rgba(255,255,255,0.25)", letterSpacing: "0.05em" }}>Markearn · Real-time POD decisions</span>
-          </div>
-
-          <div className="dash-content">
-            <div className="dash-hero-title">Stop designing <em>blind.</em></div>
-            <div className="dash-hero-sub">One verdict. Zero noise. Get a clear POD decision in under 10 seconds.</div>
-
-            <div className="dash-search-row">
-              <input className="dash-input" value={query} onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleAnalyze()}
-                placeholder='Enter a niche — "matcha lover", "halloween cat", "boy mom era"...' />
-              <button className="dash-btn" onClick={() => handleAnalyze()} disabled={loading}>
-                {loading ? "Analyzing..." : (<>Analyze<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8h10m-4-4l4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg></>)}
-              </button>
-            </div>
-
-            {!result && !limitError && (
-              <div className="dash-chips">
-                {chips.map((c) => (<button key={c} className="dash-chip" onClick={() => handleAnalyze(c)}>{c}</button>))}
-              </div>
-            )}
-
-            {limitError && (
-              <div className="dash-error-box">
-                <span style={{ fontSize: 13, color: "#fca5a5" }}>{limitError}</span>
-                <button onClick={() => router.push("/pricing")} style={{ background: "white", color: "black", border: "none", padding: "9px 18px", borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Upgrade →</button>
-              </div>
-            )}
-
-            {loading && (
-              <div className="dash-loading">
-                <div className="dash-spinner" />
-                <span style={{ fontSize: 13, color: "rgba(255,255,255,0.4)" }}>Analyzing POD market...</span>
-              </div>
-            )}
-
-            {noResult && !loading && (
-              <div style={{ textAlign: "center", padding: "32px", color: "rgba(255,255,255,0.3)", fontSize: 13 }}>
-                No data for "{query}" — try a different keyword
-              </div>
-            )}
-
-            {result && !loading && verdict && (
-              <div className="fade-up">
-                <div className="dash-result-bar">
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <div className="dash-dot verdict-pulse" />
-                    <span style={{ fontSize: 12, fontWeight: 600, color: "#34d399", letterSpacing: "0.05em" }}>{result.isEstimated ? "ESTIMATED" : "LIVE"}</span>
-                    <span style={{ fontSize: 12, color: "rgba(255,255,255,0.35)" }}>· "{searched}"</span>
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                    {result.searchesLeft !== undefined && (
-                      <span style={{ fontSize: 11, padding: "5px 12px", borderRadius: 999, background: "rgba(167,139,250,0.08)", color: "#c4b5fd", fontWeight: 600, border: "1px solid rgba(167,139,250,0.15)" }}>
-                        {result.searchesLeft} analyses left
-                      </span>
-                    )}
-                    <button onClick={() => { setResult(null); setQuery(""); setSearched(""); setShowData(false); }}
-                      style={{ fontSize: 12, color: "rgba(255,255,255,0.3)", cursor: "pointer", background: "none", border: "none", fontFamily: "inherit" }}>✕ Clear</button>
-                  </div>
-                </div>
-
-                <div className="dash-verdict" style={{ background: verdict.bg, border: `1px solid ${verdict.border}` }}>
-                  <div className="dash-verdict-left">
-                    <div className="dash-verdict-header">
-                      <span className="dash-verdict-emoji">{verdict.emoji}</span>
-                      <div>
-                        <div className="dash-verdict-tag" style={{ color: verdict.color }}>POD Verdict</div>
-                        <div className="dash-verdict-title" style={{ color: verdict.color }}>{verdict.verdict}</div>
-                      </div>
-                    </div>
-                    <div className="dash-verdict-reasons">
-                      {verdict.reasons.map((r: string, i: number) => (
-                        <div key={i} className="dash-verdict-reason">
-                          <div className="dash-verdict-bullet" style={{ background: verdict.color }} />{r}
-                        </div>
-                      ))}
-                    </div>
-                    <div className="dash-verdict-proof">
-                      {result.isEstimated
-                        ? "Estimated — limited search data for this niche."
-                        : "Verdict based on real market demand & competition data."}
-                    </div>
-                    {verdict.warning && <div className="dash-verdict-warning">⚠️ {verdict.warning}</div>}
-
-                    {verdict.design.length > 0 && (isPro ? (
-                      <div className="dash-design-grid">
-                        <div>
-                          <div className="dash-design-label" style={{ color: verdict.color }}>✏️ What to design</div>
-                          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                            {verdict.design.map((d: string, i: number) => (<div key={i} className="dash-design-card">→ {d}</div>))}
-                          </div>
-                        </div>
-                        <div>
-                          <div className="dash-design-label" style={{ color: "#f87171" }}>🚫 What to avoid</div>
-                          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                            {verdict.avoid.map((d: string, i: number) => (<div key={i} className="dash-design-card">✕ {d}</div>))}
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="dash-paywall">
-                        <div className="dash-paywall-blur">
-                          <div className="dash-design-grid">
-                            <div>
-                              <div className="dash-design-label" style={{ color: verdict.color }}>✏️ What to design</div>
-                              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                                {["dog mom + breed specific", "Funny quotes + personalized", "dog mom + holiday event"].map((d, i) => (<div key={i} className="dash-design-card">→ {d}</div>))}
-                              </div>
-                            </div>
-                            <div>
-                              <div className="dash-design-label" style={{ color: "#f87171" }}>🚫 What to avoid</div>
-                              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                                {["Generic designs", "No personalization", "Copying bestsellers"].map((d, i) => (<div key={i} className="dash-design-card">✕ {d}</div>))}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="dash-paywall-overlay">
-                          <div style={{ fontSize: 13, fontWeight: 700, color: "white" }}>🔒 Pro Feature</div>
-                          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", textAlign: "center", maxWidth: 280 }}>Unlock "What to design" & "What to avoid"</div>
-                          <button onClick={() => router.push("/pricing")} style={{ background: "white", color: "black", border: "none", padding: "9px 22px", borderRadius: 10, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", marginTop: 6 }}>Upgrade to Pro — $39/mo →</button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="dash-verdict-score">
-                    <div className="dash-verdict-score-num" style={{ color: verdict.color }}>{score}</div>
-                    <div className="dash-verdict-score-label" style={{ color: verdict.color }}>POD Score / 100</div>
-                  </div>
-                </div>
-
-                {designBrief && (
-                  <div className="fade-up" style={{ marginBottom: 20 }}>
-                    <div style={{ background: "rgba(167,139,250,0.04)", border: "1px solid rgba(167,139,250,0.15)", borderRadius: 18, padding: "26px 30px", backdropFilter: "blur(12px)" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
-                        <span style={{ fontSize: 22 }}>🎨</span>
-                        <div>
-                          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", background: "linear-gradient(135deg, #a78bfa 0%, #f472b6 100%)", WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent" }}>Smart Design Brief</div>
-                          <div style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", marginTop: 3 }}>Ready-to-use creative direction for "{searched}"</div>
-                        </div>
-                      </div>
-                      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12, marginBottom: 16 }}>
-                        {[
-                          { label: "Concept", val: designBrief.concept },
-                          { label: "Suggested Text", val: designBrief.suggestedText, italic: true },
-                          { label: "Style", val: designBrief.style },
-                        ].map((card, i) => (
-                          <div key={i} style={{ background: "rgba(255,255,255,0.02)", borderRadius: 12, padding: "16px 18px", border: "1px solid rgba(255,255,255,0.04)" }}>
-                            <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.3)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 8 }}>{card.label}</div>
-                            <div style={{ fontSize: 13, color: "rgba(255,255,255,0.85)", lineHeight: 1.55, fontStyle: card.italic ? "italic" : "normal", fontFamily: card.italic ? "Instrument Serif, serif" : "inherit" }}>{card.val}</div>
-                          </div>
-                        ))}
-                        <div style={{ background: "rgba(255,255,255,0.02)", borderRadius: 12, padding: "16px 18px", border: "1px solid rgba(255,255,255,0.04)" }}>
-                          <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.3)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 10 }}>Trending Colors</div>
-                          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                            {designBrief.colors.map((c: string, i: number) => (
-                              <span key={i} style={{ padding: "4px 10px", borderRadius: 999, background: "rgba(52,211,153,0.08)", border: "1px solid rgba(52,211,153,0.15)", color: "#34d399", fontSize: 11, fontWeight: 500 }}>{c}</span>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                      <div style={{ background: "rgba(8,9,13,0.6)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 12, padding: "16px 18px", marginBottom: 12, position: "relative" }}>
-                        <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.3)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 10 }}>🤖 Midjourney Prompt</div>
-                        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", lineHeight: 1.6, fontFamily: "JetBrains Mono, monospace", wordBreak: "break-all", paddingRight: 70 }}>{designBrief.prompt}</div>
-                        <button onClick={() => { navigator.clipboard.writeText(designBrief.prompt); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
-                          style={{ position: "absolute", top: 14, right: 14, background: copied ? "rgba(52,211,153,0.15)" : "rgba(167,139,250,0.1)", color: copied ? "#34d399" : "#c4b5fd", border: `1px solid ${copied ? "rgba(52,211,153,0.25)" : "rgba(167,139,250,0.2)"}`, padding: "5px 12px", borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: "all 0.2s" }}>
-                          {copied ? "✓ Copied" : "Copy"}
-                        </button>
-                      </div>
-                      <div style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "12px 16px", background: "rgba(251,191,36,0.04)", borderRadius: 10, border: "1px solid rgba(251,191,36,0.12)" }}>
-                        <span style={{ fontSize: 14 }}>💡</span>
-                        <span style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", lineHeight: 1.55 }}>{designBrief.tip}</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {alternatives.length > 0 && (
-                  <div className="dash-alts">
-                    <div className="dash-alts-title">🎯 Better Alternatives</div>
-                    <div className="dash-alts-sub">This niche is saturated — try these less competitive variants:</div>
-                    <div className="dash-alts-grid">
-                      {alternatives.map((alt, i) => (
-                        <div key={i} className="dash-alt-item" onClick={() => handleAnalyze(alt.name)}>
-                          <div className="dash-alt-name">→ {alt.name}</div>
-                          <div className="dash-alt-reason">{alt.reason}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <button className="dash-data-toggle" onClick={() => setShowData(!showData)}>
-                  <span style={{ fontSize: 14 }}>{showData ? "▾" : "▸"}</span>
-                  {showData ? "Hide data" : "View data (proof)"}
-                </button>
-
-                {showData && (
-                  <div className="fade-up">
-                    <div className="dash-stats">
-                      {[
-                        { label: "Monthly Searches", value: result.volume, sub: result.trend, color: result.trend?.startsWith("↑") ? "#34d399" : result.trend?.startsWith("↓") ? "#f87171" : "#fbbf24" },
-                        { label: "Competition", value: result.competition, sub: result.compScore ? `Score ${result.compScore}/100` : "Upgrade for exact score", color: result.competition === "Low" ? "#34d399" : result.competition === "Medium" ? "#fbbf24" : "#f87171" },
-                        { label: "Opportunity", value: result.opportunity, sub: result.isEstimated ? "Estimated" : "Real-time analysis", color: "#c4b5fd" },
-                      ].map((s, i) => (
-                        <div key={i} className="dash-stat">
-                          <div className="dash-stat-label">{s.label}</div>
-                          <div className="dash-stat-val" style={{ color: s.color }}>{s.value}</div>
-                          <div className="dash-stat-sub" style={{ color: s.color, opacity: 0.65 }}>{s.sub}</div>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="dash-table-card">
-                      <div className="dash-table-head">
-                        <span className="dash-table-title">Related Keywords — {result.related.length} results{!isPro && " (3 free · Pro unlocks all 10)"}</span>
-                        <div className="dash-dot verdict-pulse" />
-                      </div>
-                      <table className="dt">
-                        <thead>
-                          <tr><th>Keyword</th><th>Searches/mo</th><th>Competition</th><th>Trend</th></tr>
-                        </thead>
-                        <tbody>
-                          {result.related.map((row: any, i: number) => {
-                            const compMap: Record<string, { bg: string; text: string; border: string }> = {
-                              Low: { bg: "rgba(52,211,153,0.08)", text: "#34d399", border: "rgba(52,211,153,0.2)" },
-                              Medium: { bg: "rgba(251,191,36,0.08)", text: "#fbbf24", border: "rgba(251,191,36,0.2)" },
-                              High: { bg: "rgba(248,113,113,0.08)", text: "#f87171", border: "rgba(248,113,113,0.2)" },
-                            };
-                            const cc = compMap[row.comp] || compMap.High;
-                            const tc = row.trend?.startsWith("↑") ? "#34d399" : row.trend?.startsWith("↓") ? "#f87171" : "#fbbf24";
-                            return (
-                              <tr key={i}>
-                                <td style={{ color: "white", fontWeight: 500 }}>{row.kw}</td>
-                                <td style={{ color: "rgba(255,255,255,0.5)" }}>{row.vol}</td>
-                                <td><span style={{ display: "inline-flex", alignItems: "center", padding: "3px 10px", borderRadius: 999, fontSize: 11, fontWeight: 600, background: cc.bg, color: cc.text, border: `1px solid ${cc.border}` }}>{row.comp}</span></td>
-                                <td style={{ color: tc, fontWeight: 500 }}>{row.trend}</td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                      {!isPro && (
-                        <div style={{ padding: "16px 24px", borderTop: "1px solid rgba(255,255,255,0.04)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                          <span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>7 more keywords hidden</span>
-                          <button onClick={() => router.push("/pricing")} style={{ background: "rgba(167,139,250,0.08)", color: "#c4b5fd", border: "1px solid rgba(167,139,250,0.2)", padding: "7px 16px", borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Unlock with Pro →</button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {!result && !noResult && !loading && !limitError && (
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 280, textAlign: "center" }}>
-                <div style={{ fontSize: 44, marginBottom: 16, opacity: 0.15 }}>◎</div>
-                <div style={{ fontSize: 16, fontWeight: 500, color: "rgba(255,255,255,0.5)", marginBottom: 8 }}>Ready to analyze</div>
-                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.3)", maxWidth: 320, lineHeight: 1.6 }}>Enter a POD niche to get a clear decision — what to design, what to avoid.</div>
-              </div>
-            )}
-          </div>
-        </div>
+      <div className="dash-search-row">
+        <input className="dash-input" value={query} onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleAnalyze()}
+          placeholder='Enter a niche — "matcha lover", "halloween cat", "boy mom era"...' />
+        <button className="dash-btn" onClick={() => handleAnalyze()} disabled={loading}>
+          {loading ? "Analyzing..." : (<>Analyze<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8h10m-4-4l4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg></>)}
+        </button>
       </div>
-    </>
+
+      {!result && !limitError && (
+        <div className="dash-chips">
+          {chips.map((c) => (<button key={c} className="dash-chip" onClick={() => handleAnalyze(c)}>{c}</button>))}
+        </div>
+      )}
+
+      {limitError && (
+        <div className="dash-error-box">
+          <span style={{ fontSize: 13, color: "#fca5a5" }}>{limitError}</span>
+          <button onClick={() => router.push("/pricing")} style={{ background: "white", color: "black", border: "none", padding: "9px 18px", borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Upgrade →</button>
+        </div>
+      )}
+
+      {loading && (
+        <div className="dash-loading">
+          <div className="dash-spinner" />
+          <span style={{ fontSize: 13, color: "rgba(255,255,255,0.4)" }}>Analyzing POD market...</span>
+        </div>
+      )}
+
+      {noResult && !loading && (
+        <div style={{ textAlign: "center", padding: "32px", color: "rgba(255,255,255,0.3)", fontSize: 13 }}>
+          No data for "{query}" — try a different keyword
+        </div>
+      )}
+
+      {result && !loading && verdict && (
+        <div className="fade-up">
+          <div className="dash-result-bar">
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div className="dash-dot verdict-pulse" />
+              <span style={{ fontSize: 12, fontWeight: 600, color: "#34d399", letterSpacing: "0.05em" }}>{result.isEstimated ? "ESTIMATED" : "LIVE"}</span>
+              <span style={{ fontSize: 12, color: "rgba(255,255,255,0.35)" }}>· "{searched}"</span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+              {result.searchesLeft !== undefined && (
+                <span style={{ fontSize: 11, padding: "5px 12px", borderRadius: 999, background: "rgba(167,139,250,0.08)", color: "#c4b5fd", fontWeight: 600, border: "1px solid rgba(167,139,250,0.15)" }}>
+                  {result.searchesLeft} analyses left
+                </span>
+              )}
+              <button onClick={() => { setResult(null); setQuery(""); setSearched(""); setShowData(false); }}
+                style={{ fontSize: 12, color: "rgba(255,255,255,0.3)", cursor: "pointer", background: "none", border: "none", fontFamily: "inherit" }}>✕ Clear</button>
+            </div>
+          </div>
+
+          <div className="dash-verdict" style={{ background: verdict.bg, border: `1px solid ${verdict.border}` }}>
+            <div className="dash-verdict-left">
+              <div className="dash-verdict-header">
+                <span className="dash-verdict-emoji">{verdict.emoji}</span>
+                <div>
+                  <div className="dash-verdict-tag" style={{ color: verdict.color }}>POD Verdict</div>
+                  <div className="dash-verdict-title" style={{ color: verdict.color }}>{verdict.verdict}</div>
+                </div>
+              </div>
+              <div className="dash-verdict-reasons">
+                {verdict.reasons.map((r: string, i: number) => (
+                  <div key={i} className="dash-verdict-reason">
+                    <div className="dash-verdict-bullet" style={{ background: verdict.color }} />{r}
+                  </div>
+                ))}
+              </div>
+              <div className="dash-verdict-proof">
+                {result.isEstimated ? "Estimated — limited search data for this niche." : "Verdict based on real market demand & competition data."}
+              </div>
+              {verdict.warning && <div className="dash-verdict-warning">⚠️ {verdict.warning}</div>}
+
+              {verdict.design.length > 0 && (isPro ? (
+                <div className="dash-design-grid">
+                  <div>
+                    <div className="dash-design-label" style={{ color: verdict.color }}>✏️ What to design</div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      {verdict.design.map((d: string, i: number) => (<div key={i} className="dash-design-card">→ {d}</div>))}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="dash-design-label" style={{ color: "#f87171" }}>🚫 What to avoid</div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      {verdict.avoid.map((d: string, i: number) => (<div key={i} className="dash-design-card">✕ {d}</div>))}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="dash-paywall">
+                  <div className="dash-paywall-blur">
+                    <div className="dash-design-grid">
+                      <div>
+                        <div className="dash-design-label" style={{ color: verdict.color }}>✏️ What to design</div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                          {["dog mom + breed specific", "Funny quotes + personalized", "dog mom + holiday event"].map((d, i) => (<div key={i} className="dash-design-card">→ {d}</div>))}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="dash-design-label" style={{ color: "#f87171" }}>🚫 What to avoid</div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                          {["Generic designs", "No personalization", "Copying bestsellers"].map((d, i) => (<div key={i} className="dash-design-card">✕ {d}</div>))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="dash-paywall-overlay">
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "white" }}>🔒 Pro Feature</div>
+                    <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", textAlign: "center", maxWidth: 280 }}>Unlock "What to design" & "What to avoid"</div>
+                    <button onClick={() => router.push("/pricing")} style={{ background: "white", color: "black", border: "none", padding: "9px 22px", borderRadius: 10, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", marginTop: 6 }}>Upgrade to Pro — $39/mo →</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="dash-verdict-score">
+              <div className="dash-verdict-score-num" style={{ color: verdict.color }}>{score}</div>
+              <div className="dash-verdict-score-label" style={{ color: verdict.color }}>POD Score / 100</div>
+            </div>
+          </div>
+
+          {designBrief && (
+            <div className="fade-up" style={{ marginBottom: 20 }}>
+              <div style={{ background: "rgba(167,139,250,0.04)", border: "1px solid rgba(167,139,250,0.15)", borderRadius: 18, padding: "26px 30px", backdropFilter: "blur(12px)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
+                  <span style={{ fontSize: 22 }}>🎨</span>
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", background: "linear-gradient(135deg, #a78bfa 0%, #f472b6 100%)", WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent" }}>Smart Design Brief</div>
+                    <div style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", marginTop: 3 }}>Ready-to-use creative direction for "{searched}"</div>
+                  </div>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12, marginBottom: 16 }}>
+                  {[
+                    { label: "Concept", val: designBrief.concept },
+                    { label: "Suggested Text", val: designBrief.suggestedText, italic: true },
+                    { label: "Style", val: designBrief.style },
+                  ].map((card, i) => (
+                    <div key={i} style={{ background: "rgba(255,255,255,0.02)", borderRadius: 12, padding: "16px 18px", border: "1px solid rgba(255,255,255,0.04)" }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.3)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 8 }}>{card.label}</div>
+                      <div style={{ fontSize: 13, color: "rgba(255,255,255,0.85)", lineHeight: 1.55, fontStyle: card.italic ? "italic" : "normal", fontFamily: card.italic ? "Instrument Serif, serif" : "inherit" }}>{card.val}</div>
+                    </div>
+                  ))}
+                  <div style={{ background: "rgba(255,255,255,0.02)", borderRadius: 12, padding: "16px 18px", border: "1px solid rgba(255,255,255,0.04)" }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.3)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 10 }}>Trending Colors</div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                      {designBrief.colors.map((c: string, i: number) => (
+                        <span key={i} style={{ padding: "4px 10px", borderRadius: 999, background: "rgba(52,211,153,0.08)", border: "1px solid rgba(52,211,153,0.15)", color: "#34d399", fontSize: 11, fontWeight: 500 }}>{c}</span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <div style={{ background: "rgba(8,9,13,0.6)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 12, padding: "16px 18px", marginBottom: 12, position: "relative" }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.3)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 10 }}>🤖 Midjourney Prompt</div>
+                  <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", lineHeight: 1.6, fontFamily: "JetBrains Mono, monospace", wordBreak: "break-all", paddingRight: 70 }}>{designBrief.prompt}</div>
+                  <button onClick={() => { navigator.clipboard.writeText(designBrief.prompt); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
+                    style={{ position: "absolute", top: 14, right: 14, background: copied ? "rgba(52,211,153,0.15)" : "rgba(167,139,250,0.1)", color: copied ? "#34d399" : "#c4b5fd", border: `1px solid ${copied ? "rgba(52,211,153,0.25)" : "rgba(167,139,250,0.2)"}`, padding: "5px 12px", borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: "all 0.2s" }}>
+                    {copied ? "✓ Copied" : "Copy"}
+                  </button>
+                </div>
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "12px 16px", background: "rgba(251,191,36,0.04)", borderRadius: 10, border: "1px solid rgba(251,191,36,0.12)" }}>
+                  <span style={{ fontSize: 14 }}>💡</span>
+                  <span style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", lineHeight: 1.55 }}>{designBrief.tip}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {alternatives.length > 0 && (
+            <div className="dash-alts">
+              <div className="dash-alts-title">🎯 Better Alternatives</div>
+              <div className="dash-alts-sub">This niche is saturated — try these less competitive variants:</div>
+              <div className="dash-alts-grid">
+                {alternatives.map((alt, i) => (
+                  <div key={i} className="dash-alt-item" onClick={() => handleAnalyze(alt.name)}>
+                    <div className="dash-alt-name">→ {alt.name}</div>
+                    <div className="dash-alt-reason">{alt.reason}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <button className="dash-data-toggle" onClick={() => setShowData(!showData)}>
+            <span style={{ fontSize: 14 }}>{showData ? "▾" : "▸"}</span>
+            {showData ? "Hide data" : "View data (proof)"}
+          </button>
+
+          {showData && (
+            <div className="fade-up">
+              <div className="dash-stats">
+                {[
+                  { label: "Monthly Searches", value: result.volume, sub: result.trend, color: result.trend?.startsWith("↑") ? "#34d399" : result.trend?.startsWith("↓") ? "#f87171" : "#fbbf24" },
+                  { label: "Competition", value: result.competition, sub: result.compScore ? `Score ${result.compScore}/100` : "Upgrade for exact score", color: result.competition === "Low" ? "#34d399" : result.competition === "Medium" ? "#fbbf24" : "#f87171" },
+                  { label: "Opportunity", value: result.opportunity, sub: result.isEstimated ? "Estimated" : "Real-time analysis", color: "#c4b5fd" },
+                ].map((s, i) => (
+                  <div key={i} className="dash-stat">
+                    <div className="dash-stat-label">{s.label}</div>
+                    <div className="dash-stat-val" style={{ color: s.color }}>{s.value}</div>
+                    <div className="dash-stat-sub" style={{ color: s.color, opacity: 0.65 }}>{s.sub}</div>
+                  </div>
+                ))}
+              </div>
+              <div className="dash-table-card">
+                <div className="dash-table-head">
+                  <span className="dash-table-title">Related Keywords — {result.related.length} results{!isPro && " (3 free · Pro unlocks all 10)"}</span>
+                  <div className="dash-dot verdict-pulse" />
+                </div>
+                <table className="dt">
+                  <thead>
+                    <tr><th>Keyword</th><th>Searches/mo</th><th>Competition</th><th>Trend</th></tr>
+                  </thead>
+                  <tbody>
+                    {result.related.map((row: any, i: number) => {
+                      const compMap: Record<string, { bg: string; text: string; border: string }> = {
+                        Low: { bg: "rgba(52,211,153,0.08)", text: "#34d399", border: "rgba(52,211,153,0.2)" },
+                        Medium: { bg: "rgba(251,191,36,0.08)", text: "#fbbf24", border: "rgba(251,191,36,0.2)" },
+                        High: { bg: "rgba(248,113,113,0.08)", text: "#f87171", border: "rgba(248,113,113,0.2)" },
+                      };
+                      const cc = compMap[row.comp] || compMap.High;
+                      const tc = row.trend?.startsWith("↑") ? "#34d399" : row.trend?.startsWith("↓") ? "#f87171" : "#fbbf24";
+                      return (
+                        <tr key={i}>
+                          <td style={{ color: "white", fontWeight: 500 }}>{row.kw}</td>
+                          <td style={{ color: "rgba(255,255,255,0.5)" }}>{row.vol}</td>
+                          <td><span style={{ display: "inline-flex", alignItems: "center", padding: "3px 10px", borderRadius: 999, fontSize: 11, fontWeight: 600, background: cc.bg, color: cc.text, border: `1px solid ${cc.border}` }}>{row.comp}</span></td>
+                          <td style={{ color: tc, fontWeight: 500 }}>{row.trend}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+                {!isPro && (
+                  <div style={{ padding: "16px 24px", borderTop: "1px solid rgba(255,255,255,0.04)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>7 more keywords hidden</span>
+                    <button onClick={() => router.push("/pricing")} style={{ background: "rgba(167,139,250,0.08)", color: "#c4b5fd", border: "1px solid rgba(167,139,250,0.2)", padding: "7px 16px", borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Unlock with Pro →</button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {!result && !noResult && !loading && !limitError && (
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 280, textAlign: "center" }}>
+          <div style={{ fontSize: 44, marginBottom: 16, opacity: 0.15 }}>◎</div>
+          <div style={{ fontSize: 16, fontWeight: 500, color: "rgba(255,255,255,0.5)", marginBottom: 8 }}>Ready to analyze</div>
+          <div style={{ fontSize: 13, color: "rgba(255,255,255,0.3)", maxWidth: 320, lineHeight: 1.6 }}>Enter a POD niche to get a clear decision — what to design, what to avoid.</div>
+        </div>
+      )}
+    </DashLayout>
   );
 }
